@@ -1,21 +1,15 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faArrowUp } from '@fortawesome/free-solid-svg-icons';
+import { WarehouseService } from '../services/warehouse.service';
+
 interface Slot {
   id: number;
   name: string;
   status: 'free' | 'reserved' | 'occupied';
-}
-
-interface Warehouse {
-  id: number;
-  name: string;
-  width: number;
-  length: number;
-  slots: Slot[];
 }
 
 @Component({
@@ -29,33 +23,40 @@ interface Warehouse {
       @if (warehouse) {
       <h2>{{ warehouse.name }}</h2>
 
-      } @if (warehouse) {
+      <div class="orient">
+        <fa-icon [icon]="faArrowUp"></fa-icon>
+        <p>North here</p>
+      </div>
+
+      <div class="date-filter" *ngIf="datesChosen()">
+        <h3>Dates: {{ startDate }} → {{ endDate }}</h3>
+      </div>
+
       <div class="content">
         <div class="visual-area">
-          <div class="orient">
-            <fa-icon [icon]="faArrowUp"></fa-icon>
-            <p>North here</p>
-          </div>
+          @if (!datesChosen()) {
+          <div class="placeholder">Use the search page to pick dates to see available slots.</div>
+          } @else {
           <div
             class="warehouse-rect"
             [style.width.px]="scaleWidth(warehouse.width)"
             [style.height.px]="scaleLength(warehouse.length)"
           >
-            @for (slot of warehouse.slots; track slot.id) {
+            @for (slot of getAvailableSlots(); track slot.id) {
             <div
               class="slot"
-              [class.disabled]="isDisabled(slot)"
               [class.selected]="selected() && selected()!.id === slot.id"
               (click)="selectSlot(slot)"
               [style.height.%]="slotHeightPercent"
             >
               <div class="slot-inner">
                 <div>{{ slot.name }}</div>
-                <div class="status">{{ slot.status }}</div>
+                <div class="status">Available</div>
               </div>
             </div>
             }
           </div>
+          }
         </div>
 
         <div class="controls">
@@ -72,14 +73,10 @@ interface Warehouse {
               Company name
               <input [(ngModel)]="companyName" placeholder="Company name" />
             </label>
-            <label>
-              Start date
-              <input type="date" [(ngModel)]="startDate" />
-            </label>
-            <label>
-              End date
-              <input type="date" [(ngModel)]="endDate" />
-            </label>
+            <div class="dates">
+              <div>From: {{ startDate }}</div>
+              <div>To: {{ endDate }}</div>
+            </div>
             <div class="form-actions">
               <button (click)="confirmRent()">Confirm</button>
               <button (click)="cancelRent()">Cancel</button>
@@ -113,16 +110,8 @@ interface Warehouse {
         display: flex;
         justify-content: center;
         align-items: center;
-      }
-      .visual-area {
-        /* flex: 2; */
-      }
-      .controls {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        flex-direction: column;
-        gap: 1rem;
+        gap: 0.4rem;
+        margin-bottom: 1rem;
       }
       .warehouse-rect {
         border: 2px solid #333;
@@ -151,6 +140,15 @@ interface Warehouse {
         text-align: center;
         font-size: 0.9rem;
       }
+      .date-filter {
+        margin-bottom: 1rem;
+      }
+      /* calendar UI removed in details; dates come from search */
+      .placeholder {
+        color: #666;
+        font-style: italic;
+        padding: 1rem 0;
+      }
       .rent-form label {
         display: block;
         margin-bottom: 0.5rem;
@@ -168,24 +166,10 @@ interface Warehouse {
     `,
   ],
 })
-export class WarehouseDetailComponent {
+export class WarehouseDetailComponent implements OnInit {
   faArrowUp = faArrowUp;
-  warehouse: Warehouse = {
-    id: 1,
-    name: 'Main Warehouse',
-    width: 500,
-    length: 600,
-    slots: [
-      { id: 1, name: 'A1', status: 'free' },
-      { id: 2, name: 'A2', status: 'reserved' },
-      { id: 3, name: 'A3', status: 'occupied' },
-      { id: 4, name: 'A4', status: 'free' },
-      { id: 5, name: 'A5', status: 'occupied' },
-      { id: 6, name: 'A6', status: 'free' },
-    ],
-  };
-
-  slotHeightPercent = 100 / this.warehouse.slots.length; // dynamic amount of slots
+  warehouse: any;
+  slotHeightPercent = 0;
 
   selected = signal<Slot | null>(null);
   rentFormOpen = signal(false);
@@ -196,8 +180,30 @@ export class WarehouseDetailComponent {
   companyName = '';
   startDate = '';
   endDate = '';
+  private availableSlotsCache: Slot[] = [];
 
-  constructor(private router: Router, private route: ActivatedRoute) {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private warehouseService: WarehouseService
+  ) {}
+
+  ngOnInit() {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    this.warehouse = this.warehouseService.getById(id);
+
+    if (this.warehouse) {
+      this.slotHeightPercent = 100 / this.warehouse.slots.length;
+    }
+    const qp = this.route.snapshot.queryParamMap;
+    const start = qp.get('start');
+    const end = qp.get('end');
+    if (start && end) {
+      this.startDate = start;
+      this.endDate = end;
+      this.refreshAvailableSlots();
+    }
+  }
 
   scaleWidth(width: number): number {
     return width / 2;
@@ -212,10 +218,11 @@ export class WarehouseDetailComponent {
   }
 
   selectSlot(slot: Slot) {
-    if (!this.isDisabled(slot)) {
+    if (this.datesChosen() && !this.isDisabled(slot)) {
       this.selected.set(slot);
       this.rentFormOpen.set(false);
       this.confirmation.set(null);
+      this.refreshAvailableSlots();
     }
   }
 
@@ -230,8 +237,7 @@ export class WarehouseDetailComponent {
   cancelRent() {
     this.rentFormOpen.set(false);
     this.companyName = '';
-    this.startDate = '';
-    this.endDate = '';
+    this.refreshAvailableSlots();
   }
 
   confirmRent() {
@@ -247,7 +253,43 @@ export class WarehouseDetailComponent {
     this.selected.update((s) => (s ? { ...s, status: 'reserved' } : s));
     this.rentFormOpen.set(false);
     this.companyName = '';
-    this.startDate = '';
-    this.endDate = '';
+    this.refreshAvailableSlots();
+  }
+
+  // calendar logic removed; dates come from search page
+  datesChosen(): boolean {
+    return !!(this.startDate && this.endDate);
+  }
+
+  refreshAvailableSlots() {
+    if (!this.warehouse || !this.datesChosen()) {
+      this.availableSlotsCache = [];
+      return;
+    }
+    const start = new Date(this.startDate);
+    const end = new Date(this.endDate);
+    this.availableSlotsCache = this.warehouse.slots.filter((slot: any) =>
+      this.isSlotAvailableForRange(slot, start, end)
+    );
+  }
+
+  getAvailableSlots(): Slot[] {
+    return this.availableSlotsCache;
+  }
+
+  isSlotAvailableForRange(slot: any, start: Date, end: Date): boolean {
+    if (slot.status !== 'free') return false;
+    const bookings: { startDate: string; endDate: string }[] = slot.bookings ?? [];
+    return !bookings.some((b) =>
+      this.rangesOverlap(start, end, new Date(b.startDate), new Date(b.endDate))
+    );
+  }
+
+  rangesOverlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date): boolean {
+    const aS = new Date(aStart.getFullYear(), aStart.getMonth(), aStart.getDate()).getTime();
+    const aE = new Date(aEnd.getFullYear(), aEnd.getMonth(), aEnd.getDate()).getTime();
+    const bS = new Date(bStart.getFullYear(), bStart.getMonth(), bStart.getDate()).getTime();
+    const bE = new Date(bEnd.getFullYear(), bEnd.getMonth(), bEnd.getDate()).getTime();
+    return aS <= bE && bS <= aE;
   }
 }

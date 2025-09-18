@@ -58,7 +58,7 @@ export class HomeComponent {
 
   go(title: string) {
     if (title === 'Warehouse') {
-      this.router.navigate(['/warehouse']);
+      this.router.navigate(['/search']);
     } else {
       alert(`${title} route not implemented in POC.`);
     }

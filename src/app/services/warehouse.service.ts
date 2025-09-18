@@ -1,64 +1,96 @@
-import { Injectable, signal } from '@angular/core';
-import type { Warehouse } from '../data/warehouse.model';
-import { MOCK_WAREHOUSES } from '../data/warehouse.mock';
+import { Injectable } from '@angular/core';
 
-const STORAGE_KEY = 'poc_warehouses_v1';
+interface SlotBooking {
+  startDate: string; // ISO YYYY-MM-DD
+  endDate: string; // ISO YYYY-MM-DD
+}
+
+interface Slot {
+  id: number;
+  name: string;
+  status: 'free' | 'reserved' | 'occupied';
+  bookings?: SlotBooking[];
+}
+
+interface Warehouse {
+  id: number;
+  name: string;
+  width: number;
+  length: number;
+  heating: boolean;
+  slots: Slot[];
+}
 
 @Injectable({ providedIn: 'root' })
 export class WarehouseService {
-  private _warehouses = signal<Warehouse[]>(this.load());
-  public readonly warehouses = this._warehouses.asReadonly();
+  private warehouses: Warehouse[] = [
+    {
+      id: 1,
+      name: 'Main Warehouse',
+      width: 500,
+      length: 600,
+      slots: [
+        { id: 1, name: 'A1', status: 'free' },
+        {
+          id: 2,
+          name: 'A2',
+          status: 'reserved',
+          bookings: [
+            { startDate: '2025-09-10', endDate: '2025-09-20' },
+            { startDate: '2025-10-05', endDate: '2025-10-12' },
+          ],
+        },
+        { id: 3, name: 'A3', status: 'occupied' },
+        { id: 4, name: 'A4', status: 'free' },
+        { id: 5, name: 'A5', status: 'occupied' },
+        { id: 6, name: 'A6', status: 'free' },
+      ],
+      heating: true,
+    },
+    {
+      id: 2,
+      name: 'East Wing',
+      width: 400,
+      length: 500,
+      heating: false,
 
-  private load(): Warehouse[] {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      try {
-        return JSON.parse(raw) as Warehouse[];
-      } catch {
-        /* fallthrough */
-      }
-    }
-    // deep clone mocks so we don't accidentally mutate imported objects
-    return JSON.parse(JSON.stringify(MOCK_WAREHOUSES));
+      slots: [
+        { id: 1, name: 'B1', status: 'free' },
+        { id: 2, name: 'B2', status: 'free' },
+        {
+          id: 3,
+          name: 'B3',
+          status: 'reserved',
+          bookings: [{ startDate: '2025-09-01', endDate: '2025-09-30' }],
+        },
+        { id: 4, name: 'B4', status: 'occupied' },
+      ],
+    },
+    {
+      id: 3,
+      name: 'South Depot',
+      width: 300,
+      length: 450,
+      heating: false,
+
+      slots: [
+        { id: 1, name: 'C1', status: 'occupied' },
+        {
+          id: 2,
+          name: 'C2',
+          status: 'reserved',
+          bookings: [{ startDate: '2025-09-15', endDate: '2025-11-01' }],
+        },
+        { id: 3, name: 'C3', status: 'free' },
+      ],
+    },
+  ];
+
+  getAll() {
+    return this.warehouses;
   }
 
-  private persist() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this._warehouses()));
-  }
-
-  getAll(): Warehouse[] {
-    return this._warehouses();
-  }
-
-  getById(id: string): Warehouse | undefined {
-    return this._warehouses().find((w) => w.id === id);
-  }
-
-  updateWarehouse(updated: Warehouse) {
-    const arr = this._warehouses().map((w) => (w.id === updated.id ? updated : w));
-    this._warehouses.set(arr);
-    this.persist();
-  }
-
-  rentSlot(
-    warehouseId: string,
-    slotId: string,
-    rentedBy: string,
-    startDate: string,
-    endDate: string
-  ) {
-    const w = this.getById(warehouseId);
-    if (!w) return;
-    const slots = w.slots.map((s) => {
-      if (s.id !== slotId) return s;
-      return {
-        ...s,
-        status: 'Rented' as const,
-        rentedBy,
-        startDate,
-        endDate,
-      };
-    });
-    this.updateWarehouse({ ...w, slots });
+  getById(id: number) {
+    return this.warehouses.find((w) => w.id === id);
   }
 }
