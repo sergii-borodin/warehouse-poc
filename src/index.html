@@ -1,15 +1,284 @@
-<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>WarehousePoc</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-</head>
-<body>
-  <app-root></app-root>
-</body>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta charset="utf-8" />
+    <title>Storage Module</title>
+    <!-- base href="https://test.jutlighthouse.com/" -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta property="og:image" content="assets/lighthouse_logo_square.png" />
+    <link rel="icon" type="image/x-icon" href="https://test.jutlighthouse.com/favicon.ico" />
+    <link rel="stylesheet" href="src/styles.css" />
+    <style>
+      /*# sourceMappingURL=/sidebarLayout.css.map */
+      [_nghost-ng-c1083096583],
+      .host[_ngcontent-ng-c1083096583] {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        grid-template-columns: 190px 1fr;
+        grid-template-areas: 'topbar topbar' 'sidebar main';
+        min-height: 100vh;
+        width: 100%;
+      }
+      app-topbar[_ngcontent-ng-c1083096583] {
+        grid-area: topbar;
+      }
+      .sidebar[_ngcontent-ng-c1083096583] {
+        grid-area: sidebar;
+        padding: 15px 20px;
+      }
+      app-sidebar[_ngcontent-ng-c1083096583] {
+        grid-area: sidebar;
+      }
+      .sidebar-header[_ngcontent-ng-c1083096583] {
+        color: var(--light) !important;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .main-content[_ngcontent-ng-c1083096583] {
+        grid-area: main;
+        padding: 20px 45px;
+      }
+      @media print {
+        [_nghost-ng-c1083096583],
+        .host[_ngcontent-ng-c1083096583] {
+          display: block;
+        }
+      }
+    </style>
+    <style>
+      /*# sourceMappingURL=/topbar.component.css.map */
+      .nav-link[_ngcontent-ng-c2575733020] {
+        cursor: pointer;
+        text-transform: uppercase;
+        font-size: 13px;
+        font-weight: 400;
+      }
+      .nav-link.support-link[_ngcontent-ng-c2575733020] {
+        color: #308ccf;
+        border: 1px solid #308ccf;
+        margin-right: 20px;
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+      .nav-link.support-link[_ngcontent-ng-c2575733020]:hover {
+        color: #fff;
+      }
+      nav[_ngcontent-ng-c2575733020] {
+        padding: 0 20px;
+      }
+      .navbar-nav[_ngcontent-ng-c2575733020] {
+        margin: 0;
+        padding: 0;
+      }
+      .navbar-nav[_ngcontent-ng-c2575733020] li[_ngcontent-ng-c2575733020] {
+        padding: 10px;
+        border-bottom: 3px solid transparent;
+        border-left: 1px solid rgba(48, 141, 207, 0.5215686275);
+      }
+      .navbar-nav[_ngcontent-ng-c2575733020] li[_ngcontent-ng-c2575733020]:last-child {
+        border-right: 1px solid rgba(48, 141, 207, 0.5215686275);
+      }
+      .navbar-nav[_ngcontent-ng-c2575733020] li[_ngcontent-ng-c2575733020]:hover {
+        border-bottom-color: #308ccf;
+        background: #308ccf;
+      }
+      .navbar-nav[_ngcontent-ng-c2575733020] li.active[_ngcontent-ng-c2575733020] {
+        font-weight: bold;
+        color: #fff;
+        border-bottom-color: #308ccf;
+        background: rgba(48, 141, 207, 0.7254901961);
+      }
+      .navbar-nav[_ngcontent-ng-c2575733020]
+        li.active[_ngcontent-ng-c2575733020]
+        a[_ngcontent-ng-c2575733020] {
+        color: #fff;
+      }
+    </style>
+    <style>
+      /*# sourceMappingURL=/sidebar.component.css.map */
+      nav[_ngcontent-ng-c1113441109] {
+        height: 100%;
+        padding: 0;
+        position: relative;
+      }
+      nav[_ngcontent-ng-c1113441109] ul[_ngcontent-ng-c1113441109] li[_ngcontent-ng-c1113441109] {
+        padding: 5px 10px;
+        border-right: 4px solid transparent;
+        border-top: 1px solid rgba(48, 141, 207, 0.5215686275);
+      }
+      nav[_ngcontent-ng-c1113441109]
+        ul[_ngcontent-ng-c1113441109]
+        li[_ngcontent-ng-c1113441109]:first-child {
+        border-top-color: transparent;
+      }
+      nav[_ngcontent-ng-c1113441109]
+        ul[_ngcontent-ng-c1113441109]
+        li[_ngcontent-ng-c1113441109]:last-child {
+        border-bottom: 1px solid rgba(48, 141, 207, 0.5215686275);
+      }
+      nav[_ngcontent-ng-c1113441109]
+        ul[_ngcontent-ng-c1113441109]
+        li[_ngcontent-ng-c1113441109]:hover {
+        border-right-color: #308ccf;
+        background: #308ccf;
+        color: #fff;
+      }
+      nav[_ngcontent-ng-c1113441109]
+        ul[_ngcontent-ng-c1113441109]
+        li.active[_ngcontent-ng-c1113441109] {
+        border-right-color: #308ccf;
+        background: rgba(48, 141, 207, 0.7254901961);
+      }
+      nav[_ngcontent-ng-c1113441109]
+        ul[_ngcontent-ng-c1113441109]
+        li.active[_ngcontent-ng-c1113441109]
+        a[_ngcontent-ng-c1113441109] {
+        color: #fff;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body class="test">
+    <app-main ng-version="19.1.5">
+      <app-toast-list
+        aria-live="polite"
+        aria-atomic="true"
+        _nghost-ng-c298924489=""
+      ></app-toast-list>
+      <!-- <router-outlet></router-outlet> -->
+      <app-terminal-statement _nghost-ng-c1083096583="">
+        <app-background-image
+          _ngcontent-ng-c1083096583=""
+          data-state="shipping"
+          _nghost-ng-c2739932118=""
+        ></app-background-image>
+        <app-topbar _ngcontent-ng-c1083096583="" _nghost-ng-c2575733020="">
+          <nav _ngcontent-ng-c2575733020="" class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a
+              _ngcontent-ng-c2575733020=""
+              routerlink="/"
+              class="navbar-brand"
+              ng-reflect-router-link="/"
+              href="https://test.jutlighthouse.com/"
+            >
+              <img
+                _ngcontent-ng-c2575733020=""
+                alt="logo"
+                src="assets/lighthouse_logo_square.svg"
+                height="30"
+                width="203"
+              />
+            </a>
+            <button
+              _ngcontent-ng-c2575733020=""
+              type="button"
+              data-toggle="collapse"
+              data-target="#navbarNavAltMarkup"
+              aria-controls="navbarNavAltMarkup"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+              class="navbar-toggler"
+            >
+              <span _ngcontent-ng-c2575733020="" class="navbar-toggler-icon"></span>
+            </button>
+            <div
+              _ngcontent-ng-c2575733020=""
+              id="navbarNavAltMarkup"
+              class="collapse navbar-collapse"
+            >
+              <ul _ngcontent-ng-c2575733020="" class="navbar-nav">
+                <li
+                  _ngcontent-ng-c2575733020=""
+                  routerlinkactive="active"
+                  ng-reflect-router-link-active="active"
+                  class="active"
+                >
+                  <a
+                    _ngcontent-ng-c2575733020=""
+                    routerlink="/users"
+                    class="nav-item nav-link"
+                    ng-reflect-router-link="/users"
+                    href="#"
+                    >Storage</a
+                  >
+                </li>
+              </ul>
+            </div>
+            <div _ngcontent-ng-c2575733020="" class="navbar-nav">
+              <a _ngcontent-ng-c2575733020="" class="nav-link">Log out</a>
+            </div>
+          </nav>
+        </app-topbar>
+        <app-sidebar _ngcontent-ng-c1083096583="" _nghost-ng-c1113441109="">
+          <nav _ngcontent-ng-c1113441109="" class="navbar-dark bg-dark">
+            <ul _ngcontent-ng-c1113441109="" class="nav flex-column navbar-nav">
+              <li _ngcontent-ng-c1113441109="" class="active">
+                <a _ngcontent-ng-c1113441109="" class="nav-link" href="/search">Search for rent</a>
+              </li>
+              <li _ngcontent-ng-c1113441109="">
+                <a _ngcontent-ng-c1113441109="" class="nav-link" href="/storage"
+                  >Storage Overview</a
+                >
+              </li>
+
+              <li _ngcontent-ng-c1113441109="">
+                <a _ngcontent-ng-c1113441109="" class="nav-link" href="#">TimeLine reports</a>
+              </li>
+            </ul>
+            <div _ngcontent-ng-c1083096583="" style="height: 45px"></div>
+            <ul
+              _ngcontent-ng-c1083096583=""
+              class="nav flex-column navbar-nav"
+              style="padding: 1em"
+            >
+              <li _ngcontent-ng-c1083096583="" class="d-grid gap-2">
+                <button
+                  _ngcontent-ng-c1083096583=""
+                  type="button"
+                  class="btn btn-outline-primary btn-block"
+                >
+                  Book a slot
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </app-sidebar>
+
+        <!-- Storage module content -->
+        <div _ngcontent-ng-c1083096583="" class="main-content">
+          <div _ngcontent-ng-c1083096583="" class="table-container case_cover no_records">
+            <div _ngcontent-ng-c1083096583="">
+              <div _ngcontent-ng-c1083096583="" class="main-content-header">
+                <h3 _ngcontent-ng-c1083096583="">Storage areas/warehouses</h3>
+                <app-root></app-root>
+              </div>
+              <div class="row justify-content-start">
+                <div class="col-12"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- / Storage module content -->
+      </app-terminal-statement>
+    </app-main>
+  </body>
 </html>
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>WarehousePoc</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  </head>
+  <body>
+    <app-root></app-root>
+  </body>
+</html> -->

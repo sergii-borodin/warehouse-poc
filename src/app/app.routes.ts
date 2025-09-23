@@ -5,8 +5,8 @@ import { StorageDetailComponent } from './storage-details/storage-details.compon
 import { SearchComponent } from './search/search.component';
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
-  { path: 'search', component: SearchComponent },
+  // { path: '', component: HomeComponent },
+  { path: '', component: SearchComponent },
   { path: 'storage', component: StorageListComponent },
   { path: 'storage/:id', component: StorageDetailComponent },
   { path: '**', redirectTo: '' },

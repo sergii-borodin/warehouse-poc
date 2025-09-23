@@ -11,7 +11,6 @@ export const MOCK_WAREHOUSES: Warehouse[] = [
       return {
         id: `s${idx}`,
         name: `A${idx}`,
-        status: idx === 3 ? 'Rented' : idx === 2 ? 'Reserved' : idx === 8 ? 'Offered' : 'Available',
         ...(idx === 3
           ? { rentedBy: 'Global Shipping ApS', startDate: '2025-09-01', endDate: '2025-09-30' }
           : {}),
@@ -28,7 +27,6 @@ export const MOCK_WAREHOUSES: Warehouse[] = [
       return {
         id: `s${idx}`,
         name: `B${i + 1}`,
-        status: i === 1 ? 'Internal' : 'Available',
       };
     }),
   },
@@ -42,7 +40,6 @@ export const MOCK_WAREHOUSES: Warehouse[] = [
       return {
         id: `s${idx}`,
         name: `C${i + 1}`,
-        status: i === 0 ? 'Offered' : 'Available',
       };
     }),
   },

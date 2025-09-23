@@ -128,7 +128,6 @@ export class SearchComponent {
   }
 
   slotMatches(slot: any, start: Date, end: Date): boolean {
-    if (slot.status !== 'free') return false;
     const bookings: SlotBooking[] = slot.bookings ?? [];
     return !bookings.some((b) =>
       this.rangesOverlap(start, end, new Date(b.startDate), new Date(b.endDate))

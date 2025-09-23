@@ -1,9 +1,6 @@
-export type SlotStatus = 'Rented' | 'Reserved' | 'Offered' | 'Internal' | 'Available';
-
 export interface Slot {
   id: string;
   name: string;
-  status: SlotStatus;
   rentedBy?: string;
   startDate?: string; // ISO YYYY-MM-DD
   endDate?: string; // ISO YYYY-MM-DD

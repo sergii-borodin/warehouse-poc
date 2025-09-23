@@ -8,7 +8,6 @@ interface SlotBooking {
 interface Slot {
   id: number;
   name: string;
-  status: 'free' | 'reserved' | 'occupied';
   bookings?: SlotBooking[];
 }
 
@@ -30,20 +29,19 @@ export class StorageService {
       width: 500,
       length: 600,
       slots: [
-        { id: 1, name: 'A1', status: 'free' },
+        { id: 1, name: 'A1' },
         {
           id: 2,
           name: 'A2',
-          status: 'reserved',
           bookings: [
-            { startDate: '2025-09-10', endDate: '2025-09-20' },
+            { startDate: '2025-09-25', endDate: '2025-09-30' },
             { startDate: '2025-10-05', endDate: '2025-10-12' },
           ],
         },
-        { id: 3, name: 'A3', status: 'occupied' },
-        { id: 4, name: 'A4', status: 'free' },
-        { id: 5, name: 'A5', status: 'occupied' },
-        { id: 6, name: 'A6', status: 'free' },
+        { id: 3, name: 'A3' },
+        { id: 4, name: 'A4' },
+        { id: 5, name: 'A5' },
+        { id: 6, name: 'A6' },
       ],
       heating: true,
     },
@@ -54,15 +52,14 @@ export class StorageService {
       length: 500,
       heating: false,
       slots: [
-        { id: 1, name: 'B1', status: 'free' },
-        { id: 2, name: 'B2', status: 'free' },
+        { id: 1, name: 'B1' },
+        { id: 2, name: 'B2' },
         {
           id: 3,
           name: 'B3',
-          status: 'reserved',
           bookings: [{ startDate: '2025-09-01', endDate: '2025-09-30' }],
         },
-        { id: 4, name: 'B4', status: 'occupied' },
+        { id: 4, name: 'B4' },
       ],
     },
     {
@@ -72,14 +69,13 @@ export class StorageService {
       length: 450,
       heating: false,
       slots: [
-        { id: 1, name: 'C1', status: 'occupied' },
+        { id: 1, name: 'C1' },
         {
           id: 2,
           name: 'C2',
-          status: 'reserved',
-          bookings: [{ startDate: '2025-09-15', endDate: '2025-11-01' }],
+          bookings: [{ startDate: '2025-09-23', endDate: '2025-11-01' }],
         },
-        { id: 3, name: 'C3', status: 'free' },
+        { id: 3, name: 'C3' },
       ],
     },
   ];
@@ -90,5 +86,15 @@ export class StorageService {
 
   getById(id: number) {
     return this.storages.find((s) => s.id === id);
+  }
+
+  addBooking(storageId: number, slotId: number, booking: SlotBooking): boolean {
+    const storage = this.getById(storageId);
+    if (!storage) return false;
+    const slot = storage.slots.find((s) => s.id === slotId);
+    if (!slot) return false;
+    if (!slot.bookings) slot.bookings = [];
+    slot.bookings.push(booking);
+    return true;
   }
 }

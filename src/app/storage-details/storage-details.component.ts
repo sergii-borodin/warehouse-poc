@@ -9,7 +9,6 @@ import { StorageService } from '../services/storage.service';
 interface Slot {
   id: number;
   name: string;
-  status: 'free' | 'reserved' | 'occupied';
 }
 
 @Component({
@@ -30,36 +29,34 @@ interface Slot {
 
       <div class="content">
         <div class="visual-area">
-          @if (!datesChosen()) {
-          <div class="placeholder">Use the search page to pick dates to see available slots.</div>
-          } @else {
           <div
             class="storage-rect"
             [style.width.px]="scaleWidth(storage.width)"
             [style.height.px]="scaleLength(storage.length)"
           >
-            @for (slot of getAvailableSlots(); track slot.id) {
+            @for (slot of storage.slots; track slot.id) {
             <div
               class="slot"
               [class.selected]="selected() && selected()!.id === slot.id"
+              [class.available]="isAvailable(slot)"
+              [class.unavailable]="!isAvailable(slot)"
               (click)="selectSlot(slot)"
               [style.height.%]="slotHeightPercent"
             >
               <div class="slot-inner">
                 <div>{{ slot.name }}</div>
-                <div class="status">Available</div>
+                <div class="status">{{ isAvailable(slot) ? 'Available' : 'Not available' }}</div>
               </div>
             </div>
             }
           </div>
-          }
         </div>
 
         <div class="controls">
           @if (selected()) {
           <div class="selected-info">
             <h3>Selected: {{ selected()!.name }}</h3>
-            <p>Status: {{ selected()!.status }}</p>
+            <p>Selected slot is available for chosen dates</p>
             <button [disabled]="isDisabled(selected()!)" (click)="openRentForm()">Rent area</button>
           </div>
           } @if (rentFormOpen()) {
@@ -127,14 +124,23 @@ interface Slot {
         background: #cce5ff;
         border: 2px solid #004085;
       }
+      .slot.available {
+        background: #e6ffed;
+        border-color: #28a745;
+      }
+      .slot.unavailable {
+        background: #ffe6e6;
+        border-color: #dc3545;
+        cursor: not-allowed;
+      }
       .slot-inner {
         text-align: center;
         font-size: 0.9rem;
       }
-      .placeholder {
-        color: #666;
-        font-style: italic;
-        padding: 1rem 0;
+      .slot .today {
+        margin-top: 0.25rem;
+        font-size: 0.8rem;
+        color: #333;
       }
       .rent-form label {
         display: block;
@@ -201,20 +207,19 @@ export class StorageDetailComponent implements OnInit {
   }
 
   back() {
-    this.router.navigate(['/']);
+    this.router.navigate(['/storage']);
   }
 
   selectSlot(slot: Slot) {
-    if (this.datesChosen() && !this.isDisabled(slot)) {
+    if (this.datesChosen() && this.isAvailable(slot)) {
       this.selected.set(slot);
       this.rentFormOpen.set(false);
       this.confirmation.set(null);
-      this.refreshAvailableSlots();
     }
   }
 
   isDisabled(slot: Slot): boolean {
-    return slot.status !== 'free';
+    return !this.isAvailable(slot);
   }
   openRentForm() {
     this.rentFormOpen.set(true);
@@ -227,16 +232,22 @@ export class StorageDetailComponent implements OnInit {
 
   confirmRent() {
     if (!this.selected() || !this.companyName || !this.startDate || !this.endDate) return;
-    this.confirmation.set({
-      slotName: this.selected()!.name,
-      company: this.companyName,
-      start: this.startDate,
-      end: this.endDate,
+    const ok = this.storageService.addBooking(this.storage.id, this.selected()!.id, {
+      startDate: this.startDate,
+      endDate: this.endDate,
     });
-    this.selected.update((s) => (s ? { ...s, status: 'reserved' } : s));
-    this.rentFormOpen.set(false);
-    this.companyName = '';
-    this.refreshAvailableSlots();
+    if (ok) {
+      this.confirmation.set({
+        slotName: this.selected()!.name,
+        company: this.companyName,
+        start: this.startDate,
+        end: this.endDate,
+      });
+      this.rentFormOpen.set(false);
+      this.companyName = '';
+      this.refreshAvailableSlots();
+      this.router.navigate(['/storage']);
+    }
   }
 
   datesChosen(): boolean {
@@ -260,7 +271,23 @@ export class StorageDetailComponent implements OnInit {
   }
 
   isSlotAvailableForRange(slot: any, start: Date, end: Date): boolean {
-    if (slot.status !== 'free') return false;
+    const bookings: { startDate: string; endDate: string }[] = slot.bookings ?? [];
+    return !bookings.some((b) =>
+      this.rangesOverlap(start, end, new Date(b.startDate), new Date(b.endDate))
+    );
+  }
+
+  isAvailable(slot: any): boolean {
+    if (!this.datesChosen()) return true;
+    const start = new Date(this.startDate);
+    const end = new Date(this.endDate);
+    return this.isSlotAvailableForRange(slot, start, end);
+  }
+
+  isAvailableToday(slot: any): boolean {
+    const today = new Date();
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const end = start;
     const bookings: { startDate: string; endDate: string }[] = slot.bookings ?? [];
     return !bookings.some((b) =>
       this.rangesOverlap(start, end, new Date(b.startDate), new Date(b.endDate))

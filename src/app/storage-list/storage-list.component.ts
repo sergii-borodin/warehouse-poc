@@ -30,6 +30,26 @@ import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
         }
       </div>
       <div class="hint">Click a storage to view details</div>
+
+      @if (activeStorage()) {
+      <div class="overview">
+        <h3>{{ activeStorage()!.name }} — Slots (today)</h3>
+        <div class="slots-grid">
+          @for (slot of activeStorage()!.slots; track slot.id) {
+          <div
+            class="slot"
+            [class.available]="isSlotAvailableToday(slot)"
+            [class.unavailable]="!isSlotAvailableToday(slot)"
+          >
+            <div class="name">{{ slot.name }}</div>
+            <div class="status">
+              {{ isSlotAvailableToday(slot) ? 'Available today' : 'Not available today' }}
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+      }
     </div>
   `,
   styles: [
@@ -76,6 +96,31 @@ import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
       .hint {
         color: #666;
       }
+      .overview {
+        margin-top: 1rem;
+      }
+      .slots-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 0.75rem;
+      }
+      .slot {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 0.5rem;
+        background: #fff;
+        text-align: center;
+      }
+      .slot.available {
+        background: #d4edda;
+        border-color: #155724;
+        color: #155724;
+      }
+      .slot.unavailable {
+        background: #f8d7da;
+        border-color: #721c24;
+        color: #721c24;
+      }
     `,
   ],
 })
@@ -93,10 +138,32 @@ export class StorageListComponent {
 
   open(id: number) {
     this.activeId = id;
-    this.router.navigate(['/storage', id]);
+    // Don't navigate, just update the active storage for the overview
   }
 
   applyFilters() {
     this.filteredStorages = this.storages.filter((s) => (this.filterHeating ? s.heating : true));
+  }
+
+  activeStorage() {
+    return this.storages.find((s) => s.id === this.activeId);
+  }
+
+  isSlotAvailableToday(slot: any): boolean {
+    const today = new Date();
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const end = start;
+    const bookings: { startDate: string; endDate: string }[] = slot.bookings ?? [];
+    return !bookings.some((b) =>
+      this.rangesOverlap(start, end, new Date(b.startDate), new Date(b.endDate))
+    );
+  }
+
+  private rangesOverlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date): boolean {
+    const aS = new Date(aStart.getFullYear(), aStart.getMonth(), aStart.getDate()).getTime();
+    const aE = new Date(aEnd.getFullYear(), aEnd.getMonth(), aEnd.getDate()).getTime();
+    const bS = new Date(bStart.getFullYear(), bStart.getMonth(), bStart.getDate()).getTime();
+    const bE = new Date(bEnd.getFullYear(), bEnd.getMonth(), bEnd.getDate()).getTime();
+    return aS <= bE && bS <= aE;
   }
 }
