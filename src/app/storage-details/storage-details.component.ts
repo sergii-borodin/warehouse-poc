@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faArrowUp } from '@fortawesome/free-solid-svg-icons';
-import { WarehouseService } from '../services/warehouse.service';
+import { StorageService } from '../services/storage.service';
 
 interface Slot {
   id: number;
@@ -13,23 +13,19 @@ interface Slot {
 }
 
 @Component({
-  selector: 'app-warehouse-detail',
+  selector: 'app-storage-detail',
   standalone: true,
   imports: [CommonModule, FormsModule, FontAwesomeModule],
   template: `
     <div class="page">
       <button class="back" (click)="back()">← Back</button>
 
-      @if (warehouse) {
-      <h2>{{ warehouse.name }}</h2>
+      @if (storage) {
+      <h2>{{ storage.name }}</h2>
 
       <div class="orient">
         <fa-icon [icon]="faArrowUp"></fa-icon>
         <p>North here</p>
-      </div>
-
-      <div class="date-filter" *ngIf="datesChosen()">
-        <h3>Dates: {{ startDate }} → {{ endDate }}</h3>
       </div>
 
       <div class="content">
@@ -38,9 +34,9 @@ interface Slot {
           <div class="placeholder">Use the search page to pick dates to see available slots.</div>
           } @else {
           <div
-            class="warehouse-rect"
-            [style.width.px]="scaleWidth(warehouse.width)"
-            [style.height.px]="scaleLength(warehouse.length)"
+            class="storage-rect"
+            [style.width.px]="scaleWidth(storage.width)"
+            [style.height.px]="scaleLength(storage.length)"
           >
             @for (slot of getAvailableSlots(); track slot.id) {
             <div
@@ -113,7 +109,7 @@ interface Slot {
         gap: 0.4rem;
         margin-bottom: 1rem;
       }
-      .warehouse-rect {
+      .storage-rect {
         border: 2px solid #333;
         position: relative;
         display: flex;
@@ -127,11 +123,6 @@ interface Slot {
         justify-content: center;
         cursor: pointer;
       }
-      .slot.disabled {
-        background: #f2f2f2;
-        color: #999;
-        cursor: not-allowed;
-      }
       .slot.selected {
         background: #cce5ff;
         border: 2px solid #004085;
@@ -140,10 +131,6 @@ interface Slot {
         text-align: center;
         font-size: 0.9rem;
       }
-      .date-filter {
-        margin-bottom: 1rem;
-      }
-      /* calendar UI removed in details; dates come from search */
       .placeholder {
         color: #666;
         font-style: italic;
@@ -166,9 +153,9 @@ interface Slot {
     `,
   ],
 })
-export class WarehouseDetailComponent implements OnInit {
+export class StorageDetailComponent implements OnInit {
   faArrowUp = faArrowUp;
-  warehouse: any;
+  storage: any;
   slotHeightPercent = 0;
 
   selected = signal<Slot | null>(null);
@@ -185,15 +172,15 @@ export class WarehouseDetailComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private warehouseService: WarehouseService
+    private storageService: StorageService
   ) {}
 
   ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.warehouse = this.warehouseService.getById(id);
+    this.storage = this.storageService.getById(id);
 
-    if (this.warehouse) {
-      this.slotHeightPercent = 100 / this.warehouse.slots.length;
+    if (this.storage) {
+      this.slotHeightPercent = 100 / this.storage.slots.length;
     }
     const qp = this.route.snapshot.queryParamMap;
     const start = qp.get('start');
@@ -229,11 +216,9 @@ export class WarehouseDetailComponent implements OnInit {
   isDisabled(slot: Slot): boolean {
     return slot.status !== 'free';
   }
-
   openRentForm() {
     this.rentFormOpen.set(true);
   }
-
   cancelRent() {
     this.rentFormOpen.set(false);
     this.companyName = '';
@@ -242,33 +227,30 @@ export class WarehouseDetailComponent implements OnInit {
 
   confirmRent() {
     if (!this.selected() || !this.companyName || !this.startDate || !this.endDate) return;
-
     this.confirmation.set({
       slotName: this.selected()!.name,
       company: this.companyName,
       start: this.startDate,
       end: this.endDate,
     });
-
     this.selected.update((s) => (s ? { ...s, status: 'reserved' } : s));
     this.rentFormOpen.set(false);
     this.companyName = '';
     this.refreshAvailableSlots();
   }
 
-  // calendar logic removed; dates come from search page
   datesChosen(): boolean {
     return !!(this.startDate && this.endDate);
   }
 
   refreshAvailableSlots() {
-    if (!this.warehouse || !this.datesChosen()) {
+    if (!this.storage || !this.datesChosen()) {
       this.availableSlotsCache = [];
       return;
     }
     const start = new Date(this.startDate);
     const end = new Date(this.endDate);
-    this.availableSlotsCache = this.warehouse.slots.filter((slot: any) =>
+    this.availableSlotsCache = this.storage.slots.filter((slot: any) =>
       this.isSlotAvailableForRange(slot, start, end)
     );
   }

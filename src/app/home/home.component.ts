@@ -52,13 +52,13 @@ import { RouterModule, Router } from '@angular/router';
   ],
 })
 export class HomeComponent {
-  tabs = ['Terminal', 'Stevedoring', 'Logistics', 'Chemicals', 'Warehouse'];
+  tabs = ['Terminal', 'Stevedoring', 'Logistics', 'Chemicals', 'Storage'];
 
   constructor(private router: Router) {}
 
   go(title: string) {
-    if (title === 'Warehouse') {
-      this.router.navigate(['/search']);
+    if (title === 'Storage') {
+      this.router.navigate(['/storage']);
     } else {
       alert(`${title} route not implemented in POC.`);
     }

@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
-import { WarehouseService } from '../services/warehouse.service';
+import { StorageService } from '../services/storage.service';
 
 interface SlotBooking {
   startDate: string;
@@ -30,7 +30,8 @@ interface SlotBooking {
         <button (click)="search()">Search</button>
       </div>
 
-      <div class="results" *ngIf="searched">
+      @if (searched) {
+      <div class="results">
         <h3>Results</h3>
         <div class="hint" *ngIf="!filtered.length">No warehouses match your criteria.</div>
         <div class="cards">
@@ -44,6 +45,11 @@ interface SlotBooking {
           </div>
         </div>
       </div>
+      }
+
+      <section class="overview-section">
+        <a routerLink="/storage">Storage overview</a>
+      </section>
     </div>
   `,
   styles: [
@@ -88,6 +94,9 @@ interface SlotBooking {
       .hint {
         color: #666;
       }
+      .overview-section {
+        padding: 20px 10px;
+      }
     `,
   ],
 })
@@ -100,8 +109,8 @@ export class SearchComponent {
 
   private all: any[];
 
-  constructor(private router: Router, private warehouseService: WarehouseService) {
-    this.all = this.warehouseService.getAll();
+  constructor(private router: Router, private storageService: StorageService) {
+    this.all = this.storageService.getAll();
   }
 
   search() {
@@ -139,7 +148,7 @@ export class SearchComponent {
   }
 
   open(id: number) {
-    this.router.navigate(['/warehouse', id], {
+    this.router.navigate(['/storage', id], {
       queryParams: { start: this.startDate, end: this.endDate },
     });
   }

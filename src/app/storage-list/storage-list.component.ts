@@ -1,18 +1,18 @@
 import { Component } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
-import { WarehouseService } from '../services/warehouse.service';
+import { StorageService } from '../services/storage.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
-  selector: 'app-warehouse-list',
+  selector: 'app-storage-list',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, FontAwesomeModule],
   template: `
     <div class="wrap">
-      <h2>Warehouses</h2>
+      <h2>Storages</h2>
       <div class="filters">
         <label>
           <input type="checkbox" [(ngModel)]="filterHeating" (ngModelChange)="applyFilters()" />
@@ -20,16 +20,16 @@ import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
         </label>
       </div>
       <div class="tabs">
-        @for (w of filteredWarehouses; track w.id) {
-        <button (click)="open(w.id)" [class.active]="w.id === activeId">
-          @if(w.heating){
+        @for (s of filteredStorages; track s.id) {
+        <button (click)="open(s.id)" [class.active]="s.id === activeId">
+          @if(s.heating){
           <div class="heating-badge"><fa-icon [icon]="faTemperatureArrowUp"></fa-icon></div>
           }
-          {{ w.name }}
+          {{ s.name }}
         </button>
         }
       </div>
-      <div class="hint">Click a warehouse to view details</div>
+      <div class="hint">Click a storage to view details</div>
     </div>
   `,
   styles: [
@@ -79,26 +79,24 @@ import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
     `,
   ],
 })
-export class WarehouseListComponent {
+export class StorageListComponent {
   faTemperatureArrowUp = faTemperatureArrowUp;
-  warehouses: any[];
-  filteredWarehouses: any[] = [];
+  storages: any[];
+  filteredStorages: any[] = [];
   activeId?: number;
   filterHeating = false;
 
-  constructor(private router: Router, private warehouseService: WarehouseService) {
-    this.warehouses = this.warehouseService.getAll();
-    this.filteredWarehouses = [...this.warehouses];
+  constructor(private router: Router, private storageService: StorageService) {
+    this.storages = this.storageService.getAll();
+    this.filteredStorages = [...this.storages];
   }
 
   open(id: number) {
     this.activeId = id;
-    this.router.navigate(['/warehouse', id]);
+    this.router.navigate(['/storage', id]);
   }
 
   applyFilters() {
-    this.filteredWarehouses = this.warehouses.filter((w) =>
-      this.filterHeating ? w.heating : true
-    );
+    this.filteredStorages = this.storages.filter((s) => (this.filterHeating ? s.heating : true));
   }
 }

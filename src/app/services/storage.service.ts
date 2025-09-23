@@ -12,7 +12,7 @@ interface Slot {
   bookings?: SlotBooking[];
 }
 
-interface Warehouse {
+interface StorageUnit {
   id: number;
   name: string;
   width: number;
@@ -22,11 +22,11 @@ interface Warehouse {
 }
 
 @Injectable({ providedIn: 'root' })
-export class WarehouseService {
-  private warehouses: Warehouse[] = [
+export class StorageService {
+  private storages: StorageUnit[] = [
     {
       id: 1,
-      name: 'Main Warehouse',
+      name: 'Main Storage',
       width: 500,
       length: 600,
       slots: [
@@ -53,7 +53,6 @@ export class WarehouseService {
       width: 400,
       length: 500,
       heating: false,
-
       slots: [
         { id: 1, name: 'B1', status: 'free' },
         { id: 2, name: 'B2', status: 'free' },
@@ -72,7 +71,6 @@ export class WarehouseService {
       width: 300,
       length: 450,
       heating: false,
-
       slots: [
         { id: 1, name: 'C1', status: 'occupied' },
         {
@@ -87,10 +85,10 @@ export class WarehouseService {
   ];
 
   getAll() {
-    return this.warehouses;
+    return this.storages;
   }
 
   getById(id: number) {
-    return this.warehouses.find((w) => w.id === id);
+    return this.storages.find((s) => s.id === id);
   }
 }
