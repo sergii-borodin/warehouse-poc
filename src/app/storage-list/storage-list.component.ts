@@ -98,13 +98,16 @@ import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
       }
       .overview {
         margin-top: 1rem;
+        justify-items: center;
       }
       .slots-grid {
+        width: 21rem;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 0.75rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
       }
       .slot {
+        width: 10rem;
         border: 1px solid #ccc;
         border-radius: 4px;
         padding: 0.5rem;

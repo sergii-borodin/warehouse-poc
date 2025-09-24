@@ -169,7 +169,7 @@
                 width="203"
               />
             </a>
-            <button
+            <!-- <button
               _ngcontent-ng-c2575733020=""
               type="button"
               data-toggle="collapse"
@@ -180,13 +180,13 @@
               class="navbar-toggler"
             >
               <span _ngcontent-ng-c2575733020="" class="navbar-toggler-icon"></span>
-            </button>
+            </button> -->
             <div
               _ngcontent-ng-c2575733020=""
               id="navbarNavAltMarkup"
               class="collapse navbar-collapse"
             >
-              <ul _ngcontent-ng-c2575733020="" class="navbar-nav">
+              <!-- <ul _ngcontent-ng-c2575733020="" class="navbar-nav">
                 <li
                   _ngcontent-ng-c2575733020=""
                   routerlinkactive="active"
@@ -202,17 +202,23 @@
                     >Storage</a
                   >
                 </li>
-              </ul>
+              </ul> -->
             </div>
             <div _ngcontent-ng-c2575733020="" class="navbar-nav">
-              <a _ngcontent-ng-c2575733020="" class="nav-link">Log out</a>
+              <a
+                _ngcontent-ng-c2575733020=""
+                class="nav-link"
+                href="/login"
+                onclick="try{localStorage.removeItem('auth_user');}catch(e){}"
+                >Log out</a
+              >
             </div>
           </nav>
         </app-topbar>
         <app-sidebar _ngcontent-ng-c1083096583="" _nghost-ng-c1113441109="">
           <nav _ngcontent-ng-c1113441109="" class="navbar-dark bg-dark">
             <ul _ngcontent-ng-c1113441109="" class="nav flex-column navbar-nav">
-              <li _ngcontent-ng-c1113441109="" class="active">
+              <li _ngcontent-ng-c1113441109="">
                 <a _ngcontent-ng-c1113441109="" class="nav-link" href="/search">Search for rent</a>
               </li>
               <li _ngcontent-ng-c1113441109="">
@@ -222,7 +228,9 @@
               </li>
 
               <li _ngcontent-ng-c1113441109="">
-                <a _ngcontent-ng-c1113441109="" class="nav-link" href="#">TimeLine reports</a>
+                <a _ngcontent-ng-c1113441109="" class="nav-link" href="/timeline"
+                  >TimeLine reports</a
+                >
               </li>
             </ul>
             <div _ngcontent-ng-c1083096583="" style="height: 45px"></div>
@@ -261,6 +269,25 @@
         <!-- / Storage module content -->
       </app-terminal-statement>
     </app-main>
+    <script>
+      (function () {
+        function updateActive() {
+          var items = document.querySelectorAll('app-sidebar nav ul.navbar-nav li');
+          items.forEach(function (li) {
+            var a = li.querySelector('a.nav-link');
+            if (!a) return;
+            var href = a.getAttribute('href');
+            if (!href) return;
+            var isRoot = href === '/';
+            var match = isRoot ? location.pathname === '/' : location.pathname.startsWith(href);
+            li.classList.toggle('active', !!match);
+          });
+        }
+        window.addEventListener('popstate', updateActive);
+        window.addEventListener('DOMContentLoaded', updateActive);
+        updateActive();
+      })();
+    </script>
   </body>
 </html>
 
