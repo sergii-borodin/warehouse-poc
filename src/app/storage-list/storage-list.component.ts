@@ -21,7 +21,12 @@ import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
       </div>
       <div class="tabs">
         @for (s of filteredStorages; track s.id) {
-        <button (click)="open(s.id)" [class.active]="s.id === activeId">
+        <button
+          (click)="selectStorage(s.id)"
+          [class.selected-first]="s.id === firstActiveId"
+          [class.selected-second]="s.id === secondActiveId"
+          aria-pressed="{{ s.id === firstActiveId || s.id === secondActiveId }}"
+        >
           @if(s.heating){
           <div class="heating-badge"><fa-icon [icon]="faTemperatureArrowUp"></fa-icon></div>
           }
@@ -30,8 +35,47 @@ import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
         }
       </div>
       <div class="hint">Click a storage to view details</div>
+      <div class="detail-overview-container">
+        @if (firstActiveId) {
+        <div class="overview">
+          <h3>{{ getStorageById(firstActiveId)!.name }} — Slots (today)</h3>
+          <div class="slots-grid">
+            @for (slot of getStorageById(firstActiveId)!.slots; track slot.id) {
+            <div
+              class="slot"
+              [class.available]="isSlotAvailableToday(slot)"
+              [class.unavailable]="!isSlotAvailableToday(slot)"
+            >
+              <div class="name">{{ slot.name }}</div>
+              <div class="status">
+                {{ isSlotAvailableToday(slot) ? 'Available today' : 'Not available today' }}
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+        } @if (secondActiveId){
+        <div class="overview">
+          <h3>{{ getStorageById(secondActiveId)!.name }} — Slots (today)</h3>
+          <div class="slots-grid">
+            @for (slot of getStorageById(secondActiveId)!.slots; track slot.id) {
+            <div
+              class="slot"
+              [class.available]="isSlotAvailableToday(slot)"
+              [class.unavailable]="!isSlotAvailableToday(slot)"
+            >
+              <div class="name">{{ slot.name }}</div>
+              <div class="status">
+                {{ isSlotAvailableToday(slot) ? 'Available today' : 'Not available today' }}
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+        }
+      </div>
 
-      @if (activeStorage()) {
+      <!-- @if (activeStorage()) {
       <div class="overview">
         <h3>{{ activeStorage()!.name }} — Slots (today)</h3>
         <div class="slots-grid">
@@ -49,7 +93,7 @@ import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
           }
         </div>
       </div>
-      }
+      } -->
     </div>
   `,
   styles: [
@@ -60,23 +104,25 @@ import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
       }
       .tabs {
         display: flex;
-        gap: 1rem;
+        gap: 0.5rem;
         margin: 1rem 0;
-        /* flex-wrap: wrap; */
       }
       .tabs button {
         position: relative;
-        /* width: 30%; */
+        width: 16%;
         height: 8rem;
         padding: 0.6rem 0.9rem;
-        gap: 1rem;
         border-radius: 6px;
         border: 1px solid rgb(88, 122, 180);
         background: #eaf4ff;
         cursor: pointer;
       }
-      .tabs button.active {
+      .tabs button.selected-first {
         background: #0b63d1;
+        color: white;
+      }
+      .tabs button.selected-second {
+        background: rgb(135, 164, 199);
         color: white;
       }
       .filters {
@@ -96,6 +142,11 @@ import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
       }
       .hint {
         color: #666;
+      }
+      .detail-overview-container {
+        display: flex;
+        gap: 3rem;
+        justify-content: center;
       }
       .overview {
         margin-top: 1rem;
@@ -132,25 +183,53 @@ export class StorageListComponent {
   faTemperatureArrowUp = faTemperatureArrowUp;
   storages: any[];
   filteredStorages: any[] = [];
-  activeId?: number;
+  firstActiveId?: number;
+  secondActiveId?: number;
+
   filterHeating = false;
+
+  private storageMap = new Map<number, any>();
 
   constructor(private router: Router, private storageService: StorageService) {
     this.storages = this.storageService.getAll();
     this.filteredStorages = [...this.storages];
+    this.storages.forEach((storage) => this.storageMap.set(storage.id, storage));
   }
 
-  open(id: number) {
-    this.activeId = id;
-    // Don't navigate, just update the active storage for the overview
+  selectStorage(newId: number) {
+    // Ensure the storage actually exists (safety check)
+    const exists = this.storages.some((storage) => storage.id === newId);
+    if (!exists) {
+      console.warn(`Storage with id of ${newId} doesn't exist`);
+    }
+    // Case 1: nothing selected yet
+    if (!this.firstActiveId) {
+      this.firstActiveId = newId;
+      return;
+    }
+    // Case 2: clicked primary again → do nothing (or toggle off if you want)
+    if (this.firstActiveId === newId) {
+      return;
+    }
+    // Case 3: clicked the secondary → swap
+    if (this.secondActiveId === newId) {
+      const temp = this.firstActiveId;
+      this.firstActiveId = this.secondActiveId;
+      this.secondActiveId = temp;
+      return;
+    }
+
+    // Case 4: clicked a different storage → shift primary to secondary, new becomes primary
+    this.secondActiveId = this.firstActiveId;
+    this.firstActiveId = newId;
   }
 
   applyFilters() {
     this.filteredStorages = this.storages.filter((s) => (this.filterHeating ? s.heating : true));
   }
 
-  activeStorage() {
-    return this.storages.find((s) => s.id === this.activeId);
+  getStorageById(id: number): any | undefined {
+    return this.storageMap.get(id);
   }
 
   isSlotAvailableToday(slot: any): boolean {
