@@ -60,15 +60,16 @@ import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
       }
       .tabs {
         display: flex;
-        gap: 5%;
+        gap: 1rem;
         margin: 1rem 0;
-        flex-wrap: wrap;
+        /* flex-wrap: wrap; */
       }
       .tabs button {
         position: relative;
-        width: 30%;
+        /* width: 30%; */
         height: 8rem;
         padding: 0.6rem 0.9rem;
+        gap: 1rem;
         border-radius: 6px;
         border: 1px solid rgb(88, 122, 180);
         background: #eaf4ff;
