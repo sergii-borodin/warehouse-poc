@@ -20,11 +20,16 @@ interface SlotBooking {
       <div class="filters">
         <label>
           Start date
-          <input type="date" [(ngModel)]="startDate" (ngModelChange)="endDate = startDate" />
+          <input
+            type="date"
+            [(ngModel)]="startDate"
+            (ngModelChange)="onStartDateChange($event)"
+            [min]="today"
+          />
         </label>
         <label>
           End date
-          <input type="date" [(ngModel)]="endDate" />
+          <input type="date" [(ngModel)]="endDate" min="{{ startDate }}" />
         </label>
         <label> <input type="checkbox" [(ngModel)]="heatingOnly" /> Heating only </label>
         <button (click)="search()">Search</button>
@@ -32,24 +37,41 @@ interface SlotBooking {
 
       @if (searched) {
       <div class="results">
-        <h3>Results</h3>
+        <div class="date-range-display">
+          <h3>Results</h3>
+          <div class="date-info">
+            @if (startDate === endDate) {
+            <span class="date-text"
+              >Showing availability for <strong>{{ formatDate(startDate) }}</strong></span
+            >
+            } @else {
+            <span class="date-text"
+              >Showing availability from <strong>{{ formatDate(startDate) }}</strong> to
+              <strong>{{ formatDate(endDate) }}</strong></span
+            >
+            }
+          </div>
+        </div>
         <div class="hint" *ngIf="!filtered.length">No warehouses match your criteria.</div>
         <div class="cards">
-          <div class="card" *ngFor="let w of filtered">
+          <div class="card" *ngFor="let storage of filtered">
             <div class="card-head">
-              <div class="title">{{ w.name }}</div>
-              <div class="badge" *ngIf="w.heating">Heating</div>
+              <div class="title">{{ storage.name }}</div>
+              <div class="badge" *ngIf="storage.heating">Heating</div>
             </div>
-            <div class="slots">{{ getAvailableSlotCount(w) }} available slot(s)</div>
-            <button (click)="open(w.id)">View slots</button>
+            <div class="slots">
+              {{ getAvailableSlotCount(storage) }}/{{ getTotalSlotCount(storage.id) }} available
+              slot(s)
+            </div>
+            <button (click)="open(storage.id)">View slots</button>
           </div>
         </div>
       </div>
       }
 
-      <section class="overview-section">
+      <!-- <section class="overview-section">
         <a routerLink="/storage">Storage overview</a>
-      </section>
+      </section> -->
     </div>
   `,
   styles: [
@@ -94,6 +116,20 @@ interface SlotBooking {
       .hint {
         color: #666;
       }
+      .date-range-display {
+        margin-bottom: 1rem;
+      }
+      .date-info {
+        margin-top: 0.5rem;
+        padding: 0.75rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 0.9rem;
+      }
+      .date-text {
+        color: #374151;
+      }
       .overview-section {
         padding: 20px 10px;
       }
@@ -101,8 +137,9 @@ interface SlotBooking {
   ],
 })
 export class SearchComponent {
-  startDate: string = new Date().toISOString().split('T')[0];
-  endDate: string = this.startDate;
+  today: string = new Date().toISOString().split('T')[0];
+  startDate: string = this.today;
+  endDate: string = this.today;
   heatingOnly = false;
   searched = false;
   filtered: any[] = [];
@@ -111,6 +148,16 @@ export class SearchComponent {
 
   constructor(private router: Router, private storageService: StorageService) {
     this.all = this.storageService.getAll();
+  }
+
+  ngOnInit() {
+    // run initial search on load
+    this.search();
+  }
+
+  onStartDateChange(newDate: string) {
+    this.startDate = newDate;
+    this.endDate = newDate;
   }
 
   search() {
@@ -142,13 +189,27 @@ export class SearchComponent {
     return aS <= bE && bS <= aE;
   }
 
-  getAvailableSlotCount(w: any): number {
-    return w.slots?.length ?? 0;
+  getAvailableSlotCount(storage: any): number {
+    return storage.slots?.length ?? 0;
+  }
+
+  getTotalSlotCount(storageId: number): number {
+    return this.all.find((s) => s.id === storageId)?.slots?.length ?? 0;
   }
 
   open(id: number) {
     this.router.navigate(['/storage', id], {
       queryParams: { start: this.startDate, end: this.endDate },
+    });
+  }
+
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
   }
 }

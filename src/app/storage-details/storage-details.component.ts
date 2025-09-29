@@ -190,7 +190,7 @@ export class StorageDetailComponent implements OnInit {
   }
 
   back() {
-    this.router.navigate(['/storage']);
+    this.router.navigate(['/search']);
   }
 
   selectSlot(slot: Slot) {

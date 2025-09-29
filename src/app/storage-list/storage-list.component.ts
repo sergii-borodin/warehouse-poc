@@ -13,12 +13,18 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
   imports: [CommonModule, RouterModule, FormsModule, FontAwesomeModule, SlotGridComponent],
   template: `
     <div class="wrap">
-      <h2>Storages</h2>
-      <div class="filters">
-        <label>
-          <input type="checkbox" [(ngModel)]="filterHeating" (ngModelChange)="applyFilters()" />
-          Heating only
-        </label>
+      <div class="header">
+        <h2>Storages overview</h2>
+        <div class="filters-container">
+          <p>Filters:</p>
+          <ul class="filters">
+            <li class="filter-item">
+              <input type="checkbox" [(ngModel)]="filterHeating" (ngModelChange)="applyFilters()" />
+              <div class="heating-badge"><fa-icon [icon]="faTemperatureArrowUp"></fa-icon></div>
+              <label> Heating only </label>
+            </li>
+          </ul>
+        </div>
       </div>
       <div class="tabs">
         @for (s of filteredStorages; track s.id) {
@@ -29,7 +35,9 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
           aria-pressed="{{ s.id === firstActiveId || s.id === secondActiveId }}"
         >
           @if(s.heating){
-          <div class="heating-badge"><fa-icon [icon]="faTemperatureArrowUp"></fa-icon></div>
+          <div class="heating-badge absolute">
+            <fa-icon [icon]="faTemperatureArrowUp"></fa-icon>
+          </div>
           }
           {{ s.name }}
         </button>
@@ -63,6 +71,20 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
         padding: 1rem;
         font-family: Arial, sans-serif;
       }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .filters-container {
+        p {
+          margin: 0;
+        }
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
       .tabs {
         display: flex;
         gap: 0.5rem;
@@ -70,9 +92,8 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
       }
       .tabs button {
         position: relative;
-        width: 16%;
+        width: 5rem;
         height: 8rem;
-        padding: 0.6rem 0.9rem;
         border-radius: 6px;
         border: 1px solid rgb(88, 122, 180);
         background: #eaf4ff;
@@ -89,17 +110,24 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
       .filters {
         margin: 0.5rem 0 0.5rem;
       }
+      .filter-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
       .heating-badge {
-        position: absolute;
         display: flex;
         justify-content: center;
         align-items: center;
         width: 20px;
         height: 20px;
-        right: -5px;
-        top: -5px;
         border-radius: 50%;
         background-color: tomato;
+      }
+      .absolute {
+        position: absolute;
+        right: -5px;
+        top: -5px;
       }
       .hint {
         color: #666;
@@ -163,6 +191,8 @@ export class StorageListComponent {
 
   applyFilters() {
     this.filteredStorages = this.storages.filter((s) => (this.filterHeating ? s.heating : true));
+    this.firstActiveId = undefined;
+    this.secondActiveId = undefined;
   }
 
   getStorageById(id: number): any | undefined {
