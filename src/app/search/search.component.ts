@@ -20,7 +20,7 @@ interface SlotBooking {
       <div class="filters">
         <label>
           Start date
-          <input type="date" [(ngModel)]="startDate" />
+          <input type="date" [(ngModel)]="startDate" (ngModelChange)="endDate = startDate" />
         </label>
         <label>
           End date
@@ -101,8 +101,8 @@ interface SlotBooking {
   ],
 })
 export class SearchComponent {
-  startDate = '';
-  endDate = '';
+  startDate: string = new Date().toISOString().split('T')[0];
+  endDate: string = this.startDate;
   heatingOnly = false;
   searched = false;
   filtered: any[] = [];
