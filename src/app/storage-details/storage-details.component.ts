@@ -5,63 +5,51 @@ import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faArrowUp } from '@fortawesome/free-solid-svg-icons';
 import { StorageService } from '../services/storage.service';
-
-interface Slot {
-  id: number;
-  name: string;
-}
+import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.component';
 
 @Component({
   selector: 'app-storage-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, FontAwesomeModule],
+  imports: [CommonModule, FormsModule, FontAwesomeModule, SlotGridComponent],
   template: `
     <div class="page">
       <button class="back" (click)="back()">← Back</button>
 
       @if (storage) {
-      <h2>{{ storage.name }}</h2>
-
-      <div class="orient">
-        <fa-icon [icon]="faArrowUp"></fa-icon>
-        <p>North here</p>
-      </div>
 
       <div class="content">
-        <div class="visual-area">
-          <div
-            class="storage-rect"
-            [style.width.px]="scaleWidth(storage.width)"
-            [style.height.px]="scaleLength(storage.length)"
-          >
-            @for (slot of storage.slots; track slot.id) {
+        <div class="overview">
+          <h3>{{ storage.name }} — Slots</h3>
+          <!-- <app-slot-grid [slots]="storage.slots" [showTodayAvailability]="true"></app-slot-grid> -->
+          <div class="visual-area">
             <div
-              class="slot"
-              [class.selected]="selected() && selected()!.id === slot.id"
-              [class.available]="isAvailable(slot)"
-              [class.unavailable]="!isAvailable(slot)"
-              (click)="selectSlot(slot)"
-              [style.height.%]="slotHeightPercent"
+              class="storage-rect"
+              [style.width.px]="scaleWidth(storage.width)"
+              [style.height.px]="scaleLength(storage.length)"
             >
-              <div class="slot-inner">
-                <div>{{ slot.name }}</div>
-                <div class="status">{{ isAvailable(slot) ? 'Available' : 'Not available' }}</div>
-              </div>
+              <app-slot-grid
+                [slots]="storage.slots"
+                [clickable]="true"
+                [showTodayAvailability]="false"
+                [customDateRange]="getDateRange()"
+                [availableText]="'Available'"
+                [unavailableText]="'Not available'"
+                (slotClicked)="selectSlot($event)"
+              ></app-slot-grid>
             </div>
-            }
           </div>
         </div>
 
         <div class="controls">
           @if (selected()) {
           <div class="selected-info">
-            <h3>Selected: {{ selected()!.name }}</h3>
+            <h3>Selected: {{ selected()!.name || 'Slot ' + selected()!.id }}</h3>
             <p>Selected slot is available for chosen dates</p>
             <button [disabled]="isDisabled(selected()!)" (click)="openRentForm()">Rent area</button>
           </div>
           } @if (rentFormOpen()) {
           <div class="rent-form">
-            <h3>Rent {{ selected()!.name }}</h3>
+            <h3>Rent {{ selected()!.name || 'Slot ' + selected()!.id }}</h3>
             <label>
               Company name
               <input [(ngModel)]="companyName" placeholder="Company name" />
@@ -97,50 +85,15 @@ interface Slot {
       }
       .content {
         display: flex;
+        flex-direction: column;
+        align-items: center;
         gap: 2rem;
       }
-      .orient {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 0.4rem;
-        margin-bottom: 1rem;
-      }
       .storage-rect {
+        gap: 1rem;
+        padding: 1rem;
         border: 2px solid #333;
         position: relative;
-        display: flex;
-        flex-direction: column;
-      }
-      .slot {
-        flex: 1;
-        border: 1px solid #ccc;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-      }
-      .slot.selected {
-        background: #cce5ff;
-        border: 2px solid #004085;
-      }
-      .slot.available {
-        background: #e6ffed;
-        border-color: #28a745;
-      }
-      .slot.unavailable {
-        background: #ffe6e6;
-        border-color: #dc3545;
-        cursor: not-allowed;
-      }
-      .slot-inner {
-        text-align: center;
-        font-size: 0.9rem;
-      }
-      .slot .today {
-        margin-top: 0.25rem;
-        font-size: 0.8rem;
-        color: #333;
       }
       .rent-form label {
         display: block;
@@ -155,6 +108,36 @@ interface Slot {
         background: #e6ffed;
         border: 1px solid #28a745;
         padding: 0.5rem;
+      }
+      .overview {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 1rem;
+      }
+      .slots-grid {
+        width: 21rem;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+      .slot {
+        width: 10rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 0.5rem;
+        background: #fff;
+        text-align: center;
+      }
+      .slot.available {
+        background: #d4edda;
+        border-color: #155724;
+        color: #155724;
+      }
+      .slot.unavailable {
+        background: #f8d7da;
+        border-color: #721c24;
+        color: #721c24;
       }
     `,
   ],
@@ -238,7 +221,7 @@ export class StorageDetailComponent implements OnInit {
     });
     if (ok) {
       this.confirmation.set({
-        slotName: this.selected()!.name,
+        slotName: this.selected()!.name || `Slot ${this.selected()!.id}`,
         company: this.companyName,
         start: this.startDate,
         end: this.endDate,
@@ -300,5 +283,13 @@ export class StorageDetailComponent implements OnInit {
     const bS = new Date(bStart.getFullYear(), bStart.getMonth(), bStart.getDate()).getTime();
     const bE = new Date(bEnd.getFullYear(), bEnd.getMonth(), bEnd.getDate()).getTime();
     return aS <= bE && bS <= aE;
+  }
+
+  getDateRange(): { start: Date; end: Date } | undefined {
+    if (!this.datesChosen()) return undefined;
+    return {
+      start: new Date(this.startDate),
+      end: new Date(this.endDate),
+    };
   }
 }

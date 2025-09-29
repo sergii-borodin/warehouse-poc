@@ -5,11 +5,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
+import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.component';
 
 @Component({
   selector: 'app-storage-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, FontAwesomeModule],
+  imports: [CommonModule, RouterModule, FormsModule, FontAwesomeModule, SlotGridComponent],
   template: `
     <div class="wrap">
       <h2>Storages</h2>
@@ -39,61 +40,21 @@ import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
         @if (firstActiveId) {
         <div class="overview">
           <h3>{{ getStorageById(firstActiveId)!.name }} — Slots (today)</h3>
-          <div class="slots-grid">
-            @for (slot of getStorageById(firstActiveId)!.slots; track slot.id) {
-            <div
-              class="slot"
-              [class.available]="isSlotAvailableToday(slot)"
-              [class.unavailable]="!isSlotAvailableToday(slot)"
-            >
-              <div class="name">{{ slot.name }}</div>
-              <div class="status">
-                {{ isSlotAvailableToday(slot) ? 'Available today' : 'Not available today' }}
-              </div>
-            </div>
-            }
-          </div>
+          <app-slot-grid
+            [slots]="getStorageById(firstActiveId)!.slots"
+            [showTodayAvailability]="true"
+          ></app-slot-grid>
         </div>
         } @if (secondActiveId){
         <div class="overview">
           <h3>{{ getStorageById(secondActiveId)!.name }} — Slots (today)</h3>
-          <div class="slots-grid">
-            @for (slot of getStorageById(secondActiveId)!.slots; track slot.id) {
-            <div
-              class="slot"
-              [class.available]="isSlotAvailableToday(slot)"
-              [class.unavailable]="!isSlotAvailableToday(slot)"
-            >
-              <div class="name">{{ slot.name }}</div>
-              <div class="status">
-                {{ isSlotAvailableToday(slot) ? 'Available today' : 'Not available today' }}
-              </div>
-            </div>
-            }
-          </div>
+          <app-slot-grid
+            [slots]="getStorageById(secondActiveId)!.slots"
+            [showTodayAvailability]="true"
+          ></app-slot-grid>
         </div>
         }
       </div>
-
-      <!-- @if (activeStorage()) {
-      <div class="overview">
-        <h3>{{ activeStorage()!.name }} — Slots (today)</h3>
-        <div class="slots-grid">
-          @for (slot of activeStorage()!.slots; track slot.id) {
-          <div
-            class="slot"
-            [class.available]="isSlotAvailableToday(slot)"
-            [class.unavailable]="!isSlotAvailableToday(slot)"
-          >
-            <div class="name">{{ slot.name }}</div>
-            <div class="status">
-              {{ isSlotAvailableToday(slot) ? 'Available today' : 'Not available today' }}
-            </div>
-          </div>
-          }
-        </div>
-      </div>
-      } -->
     </div>
   `,
   styles: [
@@ -152,30 +113,6 @@ import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
         margin-top: 1rem;
         justify-items: center;
       }
-      .slots-grid {
-        width: 21rem;
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-      }
-      .slot {
-        width: 10rem;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        padding: 0.5rem;
-        background: #fff;
-        text-align: center;
-      }
-      .slot.available {
-        background: #d4edda;
-        border-color: #155724;
-        color: #155724;
-      }
-      .slot.unavailable {
-        background: #f8d7da;
-        border-color: #721c24;
-        color: #721c24;
-      }
     `,
   ],
 })
@@ -230,23 +167,5 @@ export class StorageListComponent {
 
   getStorageById(id: number): any | undefined {
     return this.storageMap.get(id);
-  }
-
-  isSlotAvailableToday(slot: any): boolean {
-    const today = new Date();
-    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const end = start;
-    const bookings: { startDate: string; endDate: string }[] = slot.bookings ?? [];
-    return !bookings.some((b) =>
-      this.rangesOverlap(start, end, new Date(b.startDate), new Date(b.endDate))
-    );
-  }
-
-  private rangesOverlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date): boolean {
-    const aS = new Date(aStart.getFullYear(), aStart.getMonth(), aStart.getDate()).getTime();
-    const aE = new Date(aEnd.getFullYear(), aEnd.getMonth(), aEnd.getDate()).getTime();
-    const bS = new Date(bStart.getFullYear(), bStart.getMonth(), bStart.getDate()).getTime();
-    const bE = new Date(bEnd.getFullYear(), bEnd.getMonth(), bEnd.getDate()).getTime();
-    return aS <= bE && bS <= aE;
   }
 }

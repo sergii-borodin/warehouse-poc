@@ -19,6 +19,7 @@ interface StorageUnit {
   width: number;
   length: number;
   heating: boolean;
+  slotVolume: number;
   slots: Slot[];
 }
 
@@ -46,5 +47,13 @@ export class StorageService {
     if (!slot.bookings) slot.bookings = [];
     slot.bookings.push(booking);
     return true;
+  }
+
+  totalStorageCapacity() {
+    const capacity = this.storages.reduce(
+      (accumulator, storage) => accumulator + storage.slots.length,
+      0
+    );
+    console.log('capacity', capacity);
   }
 }
