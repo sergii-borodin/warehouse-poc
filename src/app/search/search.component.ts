@@ -31,6 +31,21 @@ interface SlotBooking {
           End date
           <input type="date" [(ngModel)]="endDate" min="{{ startDate }}" />
         </label>
+        <label>
+          Min available meters
+          <input
+            type="number"
+            [(ngModel)]="minAvailableMeters"
+            (ngModelChange)="onMinMetersChange($event)"
+            placeholder="Enter minimum meters"
+            min="0"
+            step="1"
+            [class.error]="minAvailableMetersError"
+          />
+          <div class="error-message" *ngIf="minAvailableMetersError">
+            {{ minAvailableMetersError }}
+          </div>
+        </label>
         <label> <input type="checkbox" [(ngModel)]="heatingOnly" /> Heating only </label>
         <button (click)="search()">Search</button>
       </div>
@@ -49,6 +64,10 @@ interface SlotBooking {
               >Showing availability from <strong>{{ formatDate(startDate) }}</strong> to
               <strong>{{ formatDate(endDate) }}</strong></span
             >
+            } @if (minAvailableMeters && minAvailableMeters > 0) {
+            <span class="meters-text"> • Min {{ minAvailableMeters }}m² required</span>
+            } @if (heatingOnly) {
+            <span class="heating-text"> • Heating only</span>
             }
           </div>
         </div>
@@ -62,6 +81,9 @@ interface SlotBooking {
             <div class="slots">
               {{ getAvailableSlotCount(storage) }}/{{ getTotalSlotCount(storage.id) }} available
               slot(s)
+            </div>
+            <div class="meters" *ngIf="storage.slotVolume">
+              {{ getAvailableMeters(storage) }}m² available
             </div>
             <button (click)="open(storage.id)">View slots</button>
           </div>
@@ -130,6 +152,27 @@ interface SlotBooking {
       .date-text {
         color: #374151;
       }
+      .meters-text {
+        color: #0b63d1;
+        font-weight: 500;
+      }
+      .heating-text {
+        color: #f59e0b;
+        font-weight: 500;
+      }
+      .meters {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+      }
+      .error {
+        border-color: #dc2626 !important;
+      }
+      .error-message {
+        color: #dc2626;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+      }
       .overview-section {
         padding: 20px 10px;
       }
@@ -143,6 +186,8 @@ export class SearchComponent {
   heatingOnly = false;
   searched = false;
   filtered: any[] = [];
+  minAvailableMeters: number | null = null;
+  minAvailableMetersError = '';
 
   private all: any[];
 
@@ -160,18 +205,76 @@ export class SearchComponent {
     this.endDate = newDate;
   }
 
+  onMinMetersChange(value: any) {
+    this.minAvailableMetersError = '';
+
+    if (value === null || value === undefined || value === '') {
+      this.minAvailableMeters = null;
+      return;
+    }
+
+    const numValue = Number(value);
+    if (isNaN(numValue) || numValue < 0) {
+      this.minAvailableMetersError = 'Please enter a valid positive number';
+      return;
+    }
+
+    this.minAvailableMeters = numValue;
+  }
+
   search() {
     this.searched = true;
+
+    // Validate inputs
     if (!this.startDate || !this.endDate) {
       this.filtered = [];
       return;
     }
+
+    if (this.minAvailableMetersError) {
+      this.filtered = [];
+      return;
+    }
+
     const start = new Date(this.startDate);
     const end = new Date(this.endDate);
-    this.filtered = this.all
-      .filter((w) => (this.heatingOnly ? !!w.heating : true))
-      .map((w) => ({ ...w, slots: w.slots.filter((s: any) => this.slotMatches(s, start, end)) }))
+
+    // First filter by heating requirement
+    let filtered = this.all.filter((w) => (this.heatingOnly ? !!w.heating : true));
+
+    // Then filter by available slots for the date range and calculate available meters
+    filtered = filtered
+      .map((w) => ({
+        ...w,
+        slots: w.slots.filter((s: any) => this.slotMatches(s, start, end)),
+      }))
       .filter((w) => w.slots.length > 0);
+
+    // Finally filter by minimum available meters
+    if (this.minAvailableMeters && this.minAvailableMeters > 0) {
+      filtered = filtered.filter((w) => {
+        const availableMeters = w.slots.length * (w.slotVolume || 0);
+        console.log(
+          `Warehouse ${w.name}: ${w.slots.length} available slots * ${
+            w.slotVolume || 0
+          } = ${availableMeters} meters`
+        );
+        return availableMeters >= this.minAvailableMeters!;
+      });
+    }
+
+    this.filtered = filtered;
+    console.log(`Search results: ${this.filtered.length} warehouses found`);
+
+    // Log debug information
+    if (this.minAvailableMeters && this.minAvailableMeters > 0) {
+      console.log(`Filtering by minimum ${this.minAvailableMeters}m²`);
+      const totalAvailableMeters = this.filtered.reduce(
+        (sum, w) => sum + this.getAvailableMeters(w),
+        0
+      );
+      console.log(`Total available meters in results: ${totalAvailableMeters}m²`);
+    }
   }
 
   slotMatches(slot: any, start: Date, end: Date): boolean {
@@ -195,6 +298,12 @@ export class SearchComponent {
 
   getTotalSlotCount(storageId: number): number {
     return this.all.find((s) => s.id === storageId)?.slots?.length ?? 0;
+  }
+
+  getAvailableMeters(storage: any): number {
+    const availableSlots = storage.slots?.length ?? 0;
+    const slotVolume = storage.slotVolume ?? 0;
+    return availableSlots * slotVolume;
   }
 
   open(id: number) {
