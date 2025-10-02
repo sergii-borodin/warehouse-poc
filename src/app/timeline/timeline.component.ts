@@ -10,8 +10,8 @@ interface StorageStats {
   totalSlots: number;
   availableSlots: number;
   utilizationRate: number;
-  heatingSlots: number;
-  nonHeatingSlots: number;
+  frostFreeSlots: number;
+  nonFrostFreeSlots: number;
 }
 
 @Component({
@@ -30,9 +30,9 @@ interface StorageStats {
         </div>
 
         <div class="stat-card">
-          <h3>Total Warehouses</h3>
+          <h3>Total Storages</h3>
           <div class="stat-value">{{ storages.length }}</div>
-          <div class="stat-detail">{{ heatingWarehouses }} with heating</div>
+          <div class="stat-detail">{{ frostFreeWarehouses }} with frost free</div>
         </div>
 
         <div class="stat-card">
@@ -57,11 +57,11 @@ interface StorageStats {
         </div>
 
         <div class="chart-container">
-          <h3>Heating vs Non-Heating Distribution</h3>
+          <h3>Frost-free vs Non-Frost-free Distribution</h3>
           <canvas
             baseChart
-            [data]="heatingChartData"
-            [options]="heatingChartOptions"
+            [data]="frostFreeChartData"
+            [options]="frostFreeChartOptions"
             [type]="'doughnut'"
           >
           </canvas>
@@ -111,12 +111,12 @@ interface StorageStats {
                 <span class="value">{{ storage.availableSlots }}/{{ storage.totalSlots }}</span>
               </div>
               <div class="detail-item">
-                <span class="label">Heating:</span>
-                <span class="value">{{ storage.heatingSlots }} slots</span>
+                <span class="label">Frost-Free:</span>
+                <span class="value">{{ storage.frostFreeSlots }} slots</span>
               </div>
               <div class="detail-item">
-                <span class="label">Non-Heating:</span>
-                <span class="value">{{ storage.nonHeatingSlots }} slots</span>
+                <span class="label">Non-Frost-Free:</span>
+                <span class="value">{{ storage.nonFrostFreeSlots }} slots</span>
               </div>
             </div>
           </div>
@@ -283,7 +283,7 @@ export class TimelineComponent implements OnInit {
   totalSlots = 0;
   totalAvailableSlots = 0;
   overallUtilization = 0;
-  heatingWarehouses = 0;
+  frostFreeWarehouses = 0;
   mostUtilizedWarehouse: StorageStats | null = null;
 
   // Chart data
@@ -292,8 +292,8 @@ export class TimelineComponent implements OnInit {
     datasets: [],
   };
 
-  heatingChartData: ChartConfiguration<'doughnut'>['data'] = {
-    labels: ['Heating', 'Non-Heating'],
+  frostFreeChartData: ChartConfiguration<'doughnut'>['data'] = {
+    labels: ['Frost-Free', 'Non-Frost-Free'],
     datasets: [
       {
         data: [0, 0],
@@ -309,7 +309,7 @@ export class TimelineComponent implements OnInit {
   };
 
   capacityChartData: ChartConfiguration<'radar'>['data'] = {
-    labels: ['Total Capacity', 'Available Slots', 'Heating Slots', 'Utilization Rate'],
+    labels: ['Total Capacity', 'Available Slots', 'Frost-Free Slots', 'Utilization Rate'],
     datasets: [],
   };
 
@@ -334,7 +334,7 @@ export class TimelineComponent implements OnInit {
     },
   };
 
-  heatingChartOptions: ChartOptions<'doughnut'> = {
+  frostFreeChartOptions: ChartOptions<'doughnut'> = {
     responsive: true,
     plugins: {
       legend: {
@@ -388,8 +388,8 @@ export class TimelineComponent implements OnInit {
 
       const utilizationRate = totalSlots > 0 ? Math.round((availableSlots / totalSlots) * 100) : 0;
 
-      const heatingSlots = storage.heating ? totalSlots : 0;
-      const nonHeatingSlots = storage.heating ? 0 : totalSlots;
+      const frostFreeSlots = storage.frostFree ? totalSlots : 0;
+      const nonFrostFreeSlots = storage.frostFree ? 0 : totalSlots;
 
       return {
         id: storage.id,
@@ -397,8 +397,8 @@ export class TimelineComponent implements OnInit {
         totalSlots,
         availableSlots,
         utilizationRate,
-        heatingSlots,
-        nonHeatingSlots,
+        frostFreeSlots,
+        nonFrostFreeSlots,
       };
     });
 
@@ -411,7 +411,7 @@ export class TimelineComponent implements OnInit {
     this.overallUtilization =
       this.totalSlots > 0 ? Math.round((this.totalAvailableSlots / this.totalSlots) * 100) : 0;
 
-    this.heatingWarehouses = this.storages.filter((s) => s.heating).length;
+    this.frostFreeWarehouses = this.storages.filter((s) => s.frostFree).length;
     this.mostUtilizedWarehouse = this.storageStats.reduce((max, current) =>
       current.utilizationRate > max.utilizationRate ? current : max
     );
@@ -436,18 +436,21 @@ export class TimelineComponent implements OnInit {
       ],
     };
 
-    // Heating distribution chart
-    const totalHeatingSlots = this.storageStats.reduce((sum, stat) => sum + stat.heatingSlots, 0);
-    const totalNonHeatingSlots = this.storageStats.reduce(
-      (sum, stat) => sum + stat.nonHeatingSlots,
+    // Frost-free distribution chart
+    const totalFrostFreeSlots = this.storageStats.reduce(
+      (sum, stat) => sum + stat.frostFreeSlots,
+      0
+    );
+    const totalNonFrostFreeSlots = this.storageStats.reduce(
+      (sum, stat) => sum + stat.nonFrostFreeSlots,
       0
     );
 
-    this.heatingChartData = {
-      labels: ['Heating', 'Non-Heating'],
+    this.frostFreeChartData = {
+      labels: ['Frost-free', 'Non-Frost-free'],
       datasets: [
         {
-          data: [totalHeatingSlots, totalNonHeatingSlots],
+          data: [totalFrostFreeSlots, totalNonFrostFreeSlots],
           backgroundColor: ['#0b63d1', '#6b7280'],
           borderWidth: 0,
         },
@@ -485,14 +488,14 @@ export class TimelineComponent implements OnInit {
 
     // Capacity radar chart
     this.capacityChartData = {
-      labels: ['Total Capacity', 'Available Slots', 'Heating Slots', 'Utilization Rate'],
+      labels: ['Total Capacity', 'Available Slots', 'Frost-free Slots', 'Utilization Rate'],
       datasets: [
         {
           label: 'Overall Capacity',
           data: [
             this.totalSlots,
             this.totalAvailableSlots,
-            this.storageStats.reduce((sum, stat) => sum + stat.heatingSlots, 0),
+            this.storageStats.reduce((sum, stat) => sum + stat.frostFreeSlots, 0),
             this.overallUtilization,
           ],
           borderColor: '#0b63d1',

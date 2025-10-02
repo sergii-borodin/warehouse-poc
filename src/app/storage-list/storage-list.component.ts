@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
+import { faWarehouse } from '@fortawesome/free-solid-svg-icons';
 import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.component';
 
 @Component({
@@ -19,9 +20,22 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
           <p>Filters:</p>
           <ul class="filters">
             <li class="filter-item">
-              <input type="checkbox" [(ngModel)]="filterHeating" (ngModelChange)="applyFilters()" />
-              <div class="heating-badge"><fa-icon [icon]="faTemperatureArrowUp"></fa-icon></div>
-              <label> Heating only </label>
+              <input
+                type="checkbox"
+                [(ngModel)]="filterFrostFree"
+                (ngModelChange)="applyFilters()"
+              />
+              <div class="frost-free-badge"><fa-icon [icon]="faTemperatureArrowUp"></fa-icon></div>
+              <label> Frost free only </label>
+            </li>
+            <li class="filter-item">
+              <input
+                type="checkbox"
+                [(ngModel)]="filterFrostFree"
+                (ngModelChange)="applyFilters()"
+              />
+              <div class="frost-free-badge"><fa-icon [icon]="faTemperatureArrowUp"></fa-icon></div>
+              <label> Frost free only </label>
             </li>
           </ul>
         </div>
@@ -34,8 +48,8 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
           [class.selected-second]="s.id === secondActiveId"
           aria-pressed="{{ s.id === firstActiveId || s.id === secondActiveId }}"
         >
-          @if(s.heating){
-          <div class="heating-badge absolute">
+          @if(s.frostFree){
+          <div class="frost-free-badge absolute">
             <fa-icon [icon]="faTemperatureArrowUp"></fa-icon>
           </div>
           }
@@ -115,14 +129,15 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
         align-items: center;
         gap: 0.5rem;
       }
-      .heating-badge {
+      .frost-free-badge {
         display: flex;
         justify-content: center;
         align-items: center;
         width: 20px;
         height: 20px;
+        border: 1px solid rgb(88, 122, 180);
         border-radius: 50%;
-        background-color: tomato;
+        background-color: white;
       }
       .absolute {
         position: absolute;
@@ -151,7 +166,7 @@ export class StorageListComponent {
   firstActiveId?: number;
   secondActiveId?: number;
 
-  filterHeating = false;
+  filterFrostFree = false;
 
   private storageMap = new Map<number, any>();
 
@@ -190,7 +205,9 @@ export class StorageListComponent {
   }
 
   applyFilters() {
-    this.filteredStorages = this.storages.filter((s) => (this.filterHeating ? s.heating : true));
+    this.filteredStorages = this.storages.filter((s) =>
+      this.filterFrostFree ? s.frostFree : true
+    );
     this.firstActiveId = undefined;
     this.secondActiveId = undefined;
   }

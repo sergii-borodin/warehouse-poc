@@ -12,13 +12,21 @@ interface Slot {
   bookings?: SlotBooking[];
 }
 
+enum StorageType {
+  WAREHOUSE = 'warehouse',
+  OUTSIDE = 'outside',
+}
+
 interface StorageUnit {
   id: number;
   name: string;
   address: string;
   width: number;
   length: number;
-  heating: boolean;
+  storageType: string;
+  gateHeight: number;
+  gateWidth: number;
+  frostFree: boolean;
   slotVolume: number;
   slots: Slot[];
 }
