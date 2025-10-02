@@ -1,23 +1,23 @@
 import { Injectable } from '@angular/core';
 import storages from '../../storages.json';
 
-interface SlotBooking {
+export interface SlotBooking {
   startDate: string; // ISO YYYY-MM-DD
   endDate: string; // ISO YYYY-MM-DD
 }
 
-interface Slot {
+export interface Slot {
   id: number;
   name: string;
   bookings?: SlotBooking[];
 }
 
-enum StorageType {
+export enum StorageType {
   WAREHOUSE = 'warehouse',
   OUTSIDE = 'outside',
 }
 
-interface StorageUnit {
+export interface StorageUnit {
   id: number;
   name: string;
   address: string;

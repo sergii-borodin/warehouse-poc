@@ -28,7 +28,7 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
               <div class="frost-free-badge"><fa-icon [icon]="faTemperatureArrowUp"></fa-icon></div>
               <label> Frost free only </label>
             </li>
-            <li class="filter-item">
+            <!-- <li class="filter-item">
               <input
                 type="checkbox"
                 [(ngModel)]="filterFrostFree"
@@ -36,7 +36,7 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
               />
               <div class="frost-free-badge"><fa-icon [icon]="faTemperatureArrowUp"></fa-icon></div>
               <label> Frost free only </label>
-            </li>
+            </li> -->
           </ul>
         </div>
       </div>

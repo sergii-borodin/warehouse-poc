@@ -2,97 +2,112 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
-import { StorageService } from '../services/storage.service';
+import { StorageService, StorageUnit, Slot, SlotBooking } from '../services/storage.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faWarehouse } from '@fortawesome/free-solid-svg-icons';
 import { faTentArrowDownToLine } from '@fortawesome/free-solid-svg-icons';
 import { faTent } from '@fortawesome/free-solid-svg-icons';
 import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
-
-interface SlotBooking {
-  startDate: string;
-  endDate: string;
-}
+import { ChartConfiguration, ChartOptions } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
 
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, FontAwesomeModule],
+  imports: [CommonModule, FormsModule, RouterModule, FontAwesomeModule, BaseChartDirective],
   template: `
     <div class="page">
       <section class="search-section">
         <h2>Find Availability</h2>
-        <ul class="filters">
-          <li>
-            <label>
-              Start date
-              <input
-                type="date"
-                [(ngModel)]="startDate"
-                (ngModelChange)="onStartDateChange($event)"
-                [min]="today"
-              />
-            </label>
-          </li>
-          <li>
-            <label>
-              End date
-              <input type="date" [(ngModel)]="endDate" min="{{ startDate }}" />
-            </label>
-          </li>
-          <li>
-            <label>
-              Min available meters
-              <input
-                type="number"
-                [(ngModel)]="minAvailableMeters"
-                (ngModelChange)="onMinMetersChange($event)"
-                placeholder="Enter minimum meters"
-                min="0"
-                step="1"
-                [class.error]="minAvailableMetersError"
-              />
-              <div class="error-message" *ngIf="minAvailableMetersError">
-                {{ minAvailableMetersError }}
+        <div class="filters">
+          <ul class="main-filter-list">
+            <li>
+              <label>
+                Start date
+                <input
+                  type="date"
+                  [(ngModel)]="startDate"
+                  (ngModelChange)="onStartDateChange($event)"
+                  [min]="today"
+                />
+              </label>
+            </li>
+            <li>
+              <label>
+                End date
+                <input type="date" [(ngModel)]="endDate" min="{{ startDate }}" />
+              </label>
+            </li>
+            <li>
+              <label>
+                Min available meters
+                <input
+                  type="number"
+                  [(ngModel)]="minAvailableMeters"
+                  (ngModelChange)="onMinMetersChange($event)"
+                  placeholder="Enter minimum meters"
+                  min="0"
+                  step="1"
+                  [class.error]="minAvailableMetersError"
+                />
+                <div class="error-message" *ngIf="minAvailableMetersError">
+                  {{ minAvailableMetersError }}
+                </div>
+              </label>
+            </li>
+            <li class="storage-type-select">
+              <label>
+                select storage type
+                <select name="" id="" [(ngModel)]="storageType">
+                  <option value="warehouse">Warehouse</option>
+                  <option value="outside">Outside</option>
+                  <option value="all">All</option>
+                </select>
+              </label>
+              <!-- @if(this.storageType === 'warehouse'){
+              <div [style]="{ transition: 'color 0.8s ease' }">
+                <fa-icon [icon]="faTent"></fa-icon>
               </div>
-            </label>
-          </li>
-          <li class="storage-type-select">
-            <label>
-              select storage type
-              <select name="" id="" [(ngModel)]="storageType">
-                <option value="warehouse">Warehouse</option>
-                <option value="outside">Outside</option>
-                <option value="all">All</option>
-              </select>
-            </label>
-            @if(this.storageType === 'warehouse'){
-            <div [style]="{ transition: 'color 0.8s ease' }">
-              <fa-icon [icon]="faTent"></fa-icon>
-            </div>
-            } @else if(this.storageType === 'outside'){
-            <fa-icon
-              [icon]="faTentArrowDownToLine"
-              [style]="{ transition: 'color 0.8s ease' }"
-            ></fa-icon>
-            }
-          </li>
-          <li>
-            <label>
-              Cargo height
-              <input type="number" [(ngModel)]="cargoHeight" min="0" step="1" />
-            </label>
-          </li>
-          <li>
-            <label>
-              Cargo width
-              <input type="number" [(ngModel)]="cargoWidth" min="0" step="1" />
-            </label>
-          </li>
-          <li>
-            <label> <input type="checkbox" [(ngModel)]="frostFreeOnly" /> Frost-free only </label>
-          </li>
-        </ul>
+              } @else if(this.storageType === 'outside'){
+              <fa-icon
+                [icon]="faTentArrowDownToLine"
+                [style]="{ transition: 'color 0.8s ease' }"
+              ></fa-icon>
+              } -->
+            </li>
+          </ul>
+          @if(this.storageType === 'warehouse'){
+          <ul class="warehouse-filters">
+            <li>
+              <label>
+                Cargo height
+                <input type="number" [(ngModel)]="cargoHeight" min="0" step="1" />
+              </label>
+            </li>
+            <li>
+              <label>
+                Cargo width
+                <input type="number" [(ngModel)]="cargoWidth" min="0" step="1" />
+              </label>
+            </li>
+            <li>
+              <div class="frost-free-filter-container">
+                <div
+                  class="frost-free-badge"
+                  [class.frost-free-badge-selected]="frostFreeOnly"
+                  (click)="toggleFrostFree()"
+                >
+                  <fa-icon [icon]="faTemperatureArrowUp"></fa-icon>
+                </div>
+                <input type="checkbox" [(ngModel)]="frostFreeOnly" style="display: none;" />
+              </div>
+            </li>
+            <li>
+              <label> <input type="checkbox" [(ngModel)]="mafiTrailer" /> Mafi Trailer </label>
+            </li>
+          </ul>
+          }
+        </div>
       </section>
       @if (searched) {
       <div class="results">
@@ -131,16 +146,34 @@ interface SlotBooking {
             <div class="card-head">
               <div class="card-head-left">
                 <div class="title">{{ storage.name }}</div>
-                <div class="capacity">{{ getFullStorageCapacity(storage.id) }}m²</div>
+                @if(storage.frostFree){
+                <div class="frost-free-badge">
+                  <fa-icon [icon]="faTemperatureArrowUp"></fa-icon>
+                </div>
+                }
+                <!-- <div class="badge" *ngIf="storage.frostFree">Frost-free</div> -->
               </div>
-              <div class="badge" *ngIf="storage.frostFree">Frost-free</div>
+
+              <div class="card-head-right">
+                <div class="capacity-chart">
+                  <canvas
+                    baseChart
+                    [data]="getCapacityChartData(storage)"
+                    [options]="capacityChartOptions"
+                    [type]="'doughnut'"
+                    width="20"
+                    height="20"
+                  >
+                  </canvas>
+                </div>
+              </div>
             </div>
             <div class="slots">
               {{ getAvailableSlotCount(storage) }}/{{ getTotalSlotCount(storage.id) }} available
               slot(s)
             </div>
             <div class="meters" *ngIf="storage.slotVolume">
-              {{ getAvailableMeters(storage) }}m² available
+              {{ getAvailableMeters(storage) }}/{{ getFullStorageCapacity(storage) }}m² available
             </div>
             <button (click)="open(storage.id)">View slots</button>
           </div>
@@ -162,14 +195,22 @@ interface SlotBooking {
         display: flex;
         flex-direction: column;
         gap: 1rem;
+        /* background-color: rgb(232, 232, 232); */
+        padding: 1rem;
+        border-radius: 6px;
       }
       .filters {
-        display: flex;
-        gap: 1rem;
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+
         align-items: end;
-        /* flex-wrap: wrap; */
         margin-bottom: 1rem;
+        list-style: none;
+      }
+      .main-filter-list {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
         list-style: none;
       }
       .filters label {
@@ -180,6 +221,45 @@ interface SlotBooking {
         display: flex;
         align-items: center;
         gap: 0.5rem;
+      }
+      .warehouse-filters {
+        display: flex;
+        list-style: none;
+        align-items: end;
+        justify-content: space-between;
+        width: 100%;
+        gap: 1rem;
+      }
+      .frost-free-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        background-color: #f3f4f6;
+        border: 2px solid #d1d5db;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .frost-free-filter-container .frost-free-badge {
+        width: 40px;
+        height: 40px;
+      }
+      .frost-free-filter-container .frost-free-badge-selected {
+        color: white;
+      }
+      .frost-free-badge:hover {
+        border-color: #9ca3af;
+      }
+      .frost-free-badge-selected {
+        background-color: orange;
+        border-color: #0b63d1;
+        color: white;
+      }
+      .frost-free-badge-selected:hover {
+        border-color: rgb(118, 131, 165);
+        transition: all 0.4s ease;
       }
       /* .filters input[type='number'] {
         width: 5rem;
@@ -205,19 +285,48 @@ interface SlotBooking {
       }
       .card-head-left {
         display: flex;
-        flex-direction: column;
         gap: 0.25rem;
+        flex: 1;
       }
-      .capacity {
-        color: #6b7280;
-        font-size: 0.875rem;
+      .card-head-left .frost-free-badge {
+        border: 1px solid rgb(88, 122, 180);
+        border-radius: 5px;
+        background-color: orange;
+        color: white;
       }
-      .badge {
+      .card-head-right {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      /* .frost-free-filter-badge {
+        display: flex;
+        position: absolute;
+        justify-content: center;
+        align-items: center;
+        width: 10px;
+        height: 10px;
+        border: 1px solid rgb(88, 122, 180);
+        border-radius: 50%;
+      } */
+      /* .badge {
+        width: 5rem;
         background: #0b63d1;
         color: white;
         border-radius: 4px;
         padding: 0.1rem 0.4rem;
         font-size: 0.75rem;
+      } */
+      .capacity-chart {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .capacity {
+        color: #6b7280;
+        font-size: 0.875rem;
       }
       .hint {
         color: #666;
@@ -294,14 +403,38 @@ export class SearchComponent {
   endDate: string = this.today;
   frostFreeOnly = false;
   searched = false;
-  filteredStorages: any[] = [];
+  filteredStorages: StorageUnit[] = [];
   minAvailableMeters: number | null = null;
   minAvailableMetersError = '';
   storageType = 'all';
   cargoHeight = 1;
   cargoWidth = 1;
+  mafiTrailer = false;
+  private all: StorageUnit[];
 
-  private all: any[];
+  // Chart configuration
+  capacityChartOptions: ChartOptions<'doughnut'> = {
+    responsive: false,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        enabled: true,
+        callbacks: {
+          label: function (context) {
+            const label = context.label || '';
+            const value = context.parsed;
+            const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+            const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+            return `${label}: ${value} (${percentage}%)`;
+          },
+        },
+      },
+    },
+    cutout: '60%',
+  };
 
   constructor(private router: Router, private storageService: StorageService) {
     this.all = this.storageService.getAll();
@@ -334,6 +467,10 @@ export class SearchComponent {
     this.minAvailableMeters = numValue;
   }
 
+  toggleFrostFree() {
+    this.frostFreeOnly = !this.frostFreeOnly;
+  }
+
   search() {
     this.searched = true;
 
@@ -354,6 +491,11 @@ export class SearchComponent {
     // First filter by frostFree requirement
     let filteredStorages = this.all.filter((storage) =>
       this.frostFreeOnly ? !!storage.frostFree : true
+    );
+
+    // Then filter by mafiTrailer requirement
+    filteredStorages = filteredStorages.filter((storage) =>
+      this.mafiTrailer ? storage.gateHeight - 1 >= this.cargoHeight : true
     );
 
     // Then filter by available slots for the date range and calculate available meters
@@ -406,7 +548,7 @@ export class SearchComponent {
     }
   }
 
-  slotMatches(slot: any, start: Date, end: Date): boolean {
+  slotMatches(slot: Slot, start: Date, end: Date): boolean {
     const bookings: SlotBooking[] = slot.bookings ?? [];
     return !bookings.some((b) =>
       this.rangesOverlap(start, end, new Date(b.startDate), new Date(b.endDate))
@@ -421,24 +563,42 @@ export class SearchComponent {
     return aS <= bE && bS <= aE;
   }
 
-  getAvailableSlotCount(storage: any): number {
+  getAvailableSlotCount(storage: StorageUnit): number {
     return storage.slots?.length ?? 0;
   }
 
   getTotalSlotCount(storageId: number): number {
-    return this.all.find((s: any) => s.id === storageId)?.slots?.length ?? 0;
+    return this.all.find((s: StorageUnit) => s.id === storageId)?.slots?.length ?? 0;
   }
 
-  getFullStorageCapacity(storage: any): number {
-    const slotCount = storage.slots?.length ?? 0;
-    const slotVolume = storage.slotVolume ?? 0;
-    return slotCount * slotVolume;
+  getFullStorageCapacity(storage: StorageUnit): number {
+    return (
+      (this.all.find((s: StorageUnit) => s.id === storage.id)?.slots?.length ?? 0) *
+      storage.slotVolume
+    );
   }
 
-  getAvailableMeters(storage: any): number {
+  getAvailableMeters(storage: StorageUnit): number {
     const availableSlots = storage.slots?.length ?? 0;
     const slotVolume = storage.slotVolume ?? 0;
     return availableSlots * slotVolume;
+  }
+
+  getCapacityChartData(storage: StorageUnit): ChartConfiguration<'doughnut'>['data'] {
+    const totalSlots = this.getTotalSlotCount(storage.id);
+    const availableSlots = this.getAvailableSlotCount(storage);
+    const bookedSlots = totalSlots - availableSlots;
+
+    return {
+      labels: ['Available', 'Booked'],
+      datasets: [
+        {
+          data: [availableSlots, bookedSlots],
+          backgroundColor: ['#10b981', '#e5e7eb'],
+          borderWidth: 0,
+        },
+      ],
+    };
   }
 
   open(id: number) {
