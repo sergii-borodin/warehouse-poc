@@ -98,6 +98,7 @@ import { BaseChartDirective } from 'ng2-charts';
                   (click)="toggleFrostFree()"
                 >
                   <fa-icon [icon]="faTemperatureArrowUp"></fa-icon>
+                  <span class="tooltip">Frost-free only</span>
                 </div>
                 <input type="checkbox" [(ngModel)]="frostFreeOnly" style="display: none;" />
               </div>
@@ -149,6 +150,7 @@ import { BaseChartDirective } from 'ng2-charts';
                 @if(storage.frostFree){
                 <div class="frost-free-badge">
                   <fa-icon [icon]="faTemperatureArrowUp"></fa-icon>
+                  <span class="tooltip">Frost-free</span>
                 </div>
                 }
                 <!-- <div class="badge" *ngIf="storage.frostFree">Frost-free</div> -->
@@ -261,6 +263,41 @@ import { BaseChartDirective } from 'ng2-charts';
         border-color: rgb(118, 131, 165);
         transition: all 0.4s ease;
       }
+      .frost-free-badge {
+        position: relative;
+      }
+      .tooltip {
+        visibility: hidden;
+        opacity: 0;
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #374151;
+        color: white;
+        text-align: center;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 12px;
+        white-space: nowrap;
+        z-index: 1000;
+        transition: opacity 0.3s, visibility 0.3s;
+        pointer-events: none;
+      }
+      .tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #374151 transparent transparent transparent;
+      }
+      .frost-free-badge:hover .tooltip {
+        visibility: visible;
+        opacity: 1;
+      }
       /* .filters input[type='number'] {
         width: 5rem;
       }
@@ -285,7 +322,7 @@ import { BaseChartDirective } from 'ng2-charts';
       }
       .card-head-left {
         display: flex;
-        gap: 0.25rem;
+        gap: 0.5rem;
         flex: 1;
       }
       .card-head-left .frost-free-badge {
