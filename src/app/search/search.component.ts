@@ -10,129 +10,60 @@ import { faTent } from '@fortawesome/free-solid-svg-icons';
 import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
+import {
+  StorageFilterComponent,
+  FilterState,
+} from '../components/storage-filter/storage-filter.component';
 
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, FontAwesomeModule, BaseChartDirective],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    FontAwesomeModule,
+    BaseChartDirective,
+    StorageFilterComponent,
+  ],
   template: `
     <div class="page">
       <section class="search-section">
         <h2>Find Availability</h2>
-        <div class="filters">
-          <ul class="main-filter-list">
-            <li>
-              <label>
-                Start date
-                <input
-                  type="date"
-                  [(ngModel)]="startDate"
-                  (ngModelChange)="onStartDateChange($event)"
-                  [min]="today"
-                />
-              </label>
-            </li>
-            <li>
-              <label>
-                End date
-                <input type="date" [(ngModel)]="endDate" min="{{ startDate }}" />
-              </label>
-            </li>
-            <li>
-              <label>
-                Min available meters
-                <input
-                  type="number"
-                  [(ngModel)]="minAvailableMeters"
-                  (ngModelChange)="onMinMetersChange($event)"
-                  placeholder="Enter minimum meters"
-                  min="0"
-                  step="1"
-                  [class.error]="minAvailableMetersError"
-                />
-                <div class="error-message" *ngIf="minAvailableMetersError">
-                  {{ minAvailableMetersError }}
-                </div>
-              </label>
-            </li>
-            <li class="storage-type-select">
-              <label>
-                select storage type
-                <select name="" id="" [(ngModel)]="storageType">
-                  <option value="warehouse">Warehouse</option>
-                  <option value="outside">Outside</option>
-                  <option value="all">All</option>
-                </select>
-              </label>
-              <!-- @if(this.storageType === 'warehouse'){
-              <div [style]="{ transition: 'color 0.8s ease' }">
-                <fa-icon [icon]="faTent"></fa-icon>
-              </div>
-              } @else if(this.storageType === 'outside'){
-              <fa-icon
-                [icon]="faTentArrowDownToLine"
-                [style]="{ transition: 'color 0.8s ease' }"
-              ></fa-icon>
-              } -->
-            </li>
-          </ul>
-          @if(this.storageType === 'warehouse'){
-          <ul class="warehouse-filters">
-            <li>
-              <label>
-                Cargo height
-                <input type="number" [(ngModel)]="cargoHeight" min="0" step="1" />
-              </label>
-            </li>
-            <li>
-              <label>
-                Cargo width
-                <input type="number" [(ngModel)]="cargoWidth" min="0" step="1" />
-              </label>
-            </li>
-            <li>
-              <div class="frost-free-filter-container">
-                <div
-                  class="frost-free-badge"
-                  [class.frost-free-badge-selected]="frostFreeOnly"
-                  (click)="toggleFrostFree()"
-                >
-                  <fa-icon [icon]="faTemperatureArrowUp"></fa-icon>
-                  <span class="tooltip">Frost-free only</span>
-                </div>
-                <input type="checkbox" [(ngModel)]="frostFreeOnly" style="display: none;" />
-              </div>
-            </li>
-            <li>
-              <label> <input type="checkbox" [(ngModel)]="mafiTrailer" /> Mafi Trailer </label>
-            </li>
-          </ul>
-          }
-        </div>
+        <app-storage-filter
+          [filterState]="filterState"
+          (filterStateChange)="onFilterStateChange($event)"
+        >
+        </app-storage-filter>
       </section>
       @if (searched) {
       <div class="results">
         <div class="date-range-display">
           <div class="date-info">
             <div>
-              @if (startDate === endDate) {
+              @if (filterState.startDate === filterState.endDate) {
               <span class="date-text"
-                >Showing availability for <strong>{{ formatDate(startDate) }}</strong></span
+                >Showing availability for
+                <strong>{{ formatDate(filterState.startDate) }}</strong></span
               >
               } @else {
               <span class="date-text"
-                >Showing availability from <strong>{{ formatDate(startDate) }}</strong> to
-                <strong>{{ formatDate(endDate) }}</strong></span
+                >Showing availability from
+                <strong>{{ formatDate(filterState.startDate) }}</strong> to
+                <strong>{{ formatDate(filterState.endDate) }}</strong></span
               >
-              } @if (minAvailableMeters && minAvailableMeters > 0) {
-              <span class="meters-text"> • Min {{ minAvailableMeters }}m² required</span>
-              } @if (storageType !== 'all') {
-              <span class="storage-text"> • Storage type: {{ storageType }}</span>
-              } @if (frostFreeOnly) {
+              } @if (filterState.minAvailableMeters && filterState.minAvailableMeters > 0) {
+              <span class="meters-text">
+                • Min {{ filterState.minAvailableMeters }}m² required</span
+              >
+              } @if (filterState.storageType !== 'all') {
+              <span class="storage-text"> • Storage type: {{ filterState.storageType }}</span>
+              } @if (filterState.frostFreeOnly) {
               <span class="frostFree-text"> • Frost-free only</span>
-              } @if (cargoHeight || cargoWidth) {
+              } @if (filterState.cargoHeight || filterState.cargoWidth) {
               <span class="gate-text">
-                • Cargo height: {{ cargoHeight }}m, Cargo width: {{ cargoWidth }}m</span
+                • Cargo height: {{ filterState.cargoHeight }}m, Cargo width:
+                {{ filterState.cargoWidth }}m</span
               >
               }
             </div>
@@ -157,7 +88,7 @@ import { BaseChartDirective } from 'ng2-charts';
               </div>
 
               <div class="card-head-right">
-                <div class="capacity-chart">
+                <!-- <div class="capacity-chart">
                   <canvas
                     baseChart
                     [data]="getCapacityChartData(storage)"
@@ -167,7 +98,7 @@ import { BaseChartDirective } from 'ng2-charts';
                     height="20"
                   >
                   </canvas>
-                </div>
+                </div> -->
               </div>
             </div>
             <div class="slots">
@@ -435,19 +366,22 @@ export class SearchComponent {
   faWarehouse = faWarehouse;
   faTentArrowDownToLine = faTentArrowDownToLine;
   faTent = faTent;
-  today: string = new Date().toISOString().split('T')[0];
-  startDate: string = this.today;
-  endDate: string = this.today;
-  frostFreeOnly = false;
   searched = false;
   filteredStorages: StorageUnit[] = [];
-  minAvailableMeters: number | null = null;
-  minAvailableMetersError = '';
-  storageType = 'all';
-  cargoHeight = 1;
-  cargoWidth = 1;
-  mafiTrailer = false;
   private all: StorageUnit[];
+
+  // Filter state object
+  filterState: FilterState = {
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date().toISOString().split('T')[0],
+    minAvailableMeters: null,
+    minAvailableMetersError: '',
+    storageType: 'all',
+    cargoHeight: 1,
+    cargoWidth: 1,
+    frostFreeOnly: false,
+    mafiTrailer: false,
+  };
 
   // Chart configuration
   capacityChartOptions: ChartOptions<'doughnut'> = {
@@ -482,57 +416,36 @@ export class SearchComponent {
     this.search();
   }
 
-  onStartDateChange(newDate: string) {
-    this.startDate = newDate;
-    this.endDate = newDate;
-  }
-
-  onMinMetersChange(value: any) {
-    this.minAvailableMetersError = '';
-
-    if (value === null || value === undefined || value === '') {
-      this.minAvailableMeters = null;
-      return;
-    }
-
-    const numValue = Number(value);
-    if (isNaN(numValue) || numValue < 0) {
-      this.minAvailableMetersError = 'Please enter a valid positive number';
-      return;
-    }
-
-    this.minAvailableMeters = numValue;
-  }
-
-  toggleFrostFree() {
-    this.frostFreeOnly = !this.frostFreeOnly;
+  onFilterStateChange(newFilterState: FilterState) {
+    this.filterState = newFilterState;
+    this.search();
   }
 
   search() {
     this.searched = true;
 
     // Validate inputs
-    if (!this.startDate || !this.endDate) {
+    if (!this.filterState.startDate || !this.filterState.endDate) {
       this.filteredStorages = [];
       return;
     }
 
-    if (this.minAvailableMetersError) {
+    if (this.filterState.minAvailableMetersError) {
       this.filteredStorages = [];
       return;
     }
 
-    const start = new Date(this.startDate);
-    const end = new Date(this.endDate);
+    const start = new Date(this.filterState.startDate);
+    const end = new Date(this.filterState.endDate);
 
     // First filter by frostFree requirement
     let filteredStorages = this.all.filter((storage) =>
-      this.frostFreeOnly ? !!storage.frostFree : true
+      this.filterState.frostFreeOnly ? !!storage.frostFree : true
     );
 
     // Then filter by mafiTrailer requirement
     filteredStorages = filteredStorages.filter((storage) =>
-      this.mafiTrailer ? storage.gateHeight - 1 >= this.cargoHeight : true
+      this.filterState.mafiTrailer ? storage.gateHeight - 1 >= this.filterState.cargoHeight : true
     );
 
     // Then filter by available slots for the date range and calculate available meters
@@ -544,7 +457,7 @@ export class SearchComponent {
       .filter((storage) => storage.slots.length > 0);
 
     // Finally filter by minimum available meters
-    if (this.minAvailableMeters && this.minAvailableMeters > 0) {
+    if (this.filterState.minAvailableMeters && this.filterState.minAvailableMeters > 0) {
       filteredStorages = filteredStorages.filter((storage) => {
         const availableMeters = storage.slots.length * (storage.slotVolume || 0);
         console.log(
@@ -552,22 +465,23 @@ export class SearchComponent {
             storage.slotVolume || 0
           } = ${availableMeters} meters`
         );
-        return availableMeters >= this.minAvailableMeters!;
+        return availableMeters >= this.filterState.minAvailableMeters!;
       });
     }
 
     // Finally filter by storage type
-    if (this.storageType !== 'all') {
+    if (this.filterState.storageType !== 'all') {
       filteredStorages = filteredStorages.filter(
-        (storage) => storage.storageType === this.storageType
+        (storage) => storage.storageType === this.filterState.storageType
       );
     }
 
     // Finally filter by gate height and width
-    if (this.cargoHeight && this.cargoWidth) {
+    if (this.filterState.cargoHeight && this.filterState.cargoWidth) {
       filteredStorages = filteredStorages.filter(
         (storage) =>
-          storage.gateHeight >= +this.cargoHeight && storage.gateWidth >= +this.cargoWidth
+          storage.gateHeight >= +this.filterState.cargoHeight &&
+          storage.gateWidth >= +this.filterState.cargoWidth
       );
     }
 
@@ -575,8 +489,8 @@ export class SearchComponent {
     console.log(`Search results: ${this.filteredStorages.length} storages found`);
 
     // Log debug information
-    if (this.minAvailableMeters && this.minAvailableMeters > 0) {
-      console.log(`Filtering by minimum ${this.minAvailableMeters}m²`);
+    if (this.filterState.minAvailableMeters && this.filterState.minAvailableMeters > 0) {
+      console.log(`Filtering by minimum ${this.filterState.minAvailableMeters}m²`);
       const totalAvailableMeters = this.filteredStorages.reduce(
         (sum, storage) => sum + this.getAvailableMeters(storage),
         0
@@ -640,7 +554,7 @@ export class SearchComponent {
 
   open(id: number) {
     this.router.navigate(['/storage', id], {
-      queryParams: { start: this.startDate, end: this.endDate },
+      queryParams: { start: this.filterState.startDate, end: this.filterState.endDate },
     });
   }
 

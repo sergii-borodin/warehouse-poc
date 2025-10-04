@@ -28,7 +28,7 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
               [style.height.px]="scaleLength(storage.length)"
             >
               <app-slot-grid
-                [slots]="storage.slots"
+                [slots]="getSlotsForRendering(storage.slots)"
                 [clickable]="true"
                 [showTodayAvailability]="false"
                 [customDateRange]="getDateRange()"
@@ -291,5 +291,18 @@ export class StorageDetailComponent implements OnInit {
       start: new Date(this.startDate),
       end: new Date(this.endDate),
     };
+  }
+
+  getSlotsForRendering(slots: Slot[]) {
+    const half = Math.ceil(slots.length / 2);
+    const left = slots.slice(0, half).reverse(); // left col reversed
+    const right = slots.slice(half); // right col normal
+    const result: Slot[] = [];
+
+    for (let i = 0; i < half; i++) {
+      if (left[i]) result.push(left[i]);
+      if (right[i]) result.push(right[i]);
+    }
+    return result;
   }
 }

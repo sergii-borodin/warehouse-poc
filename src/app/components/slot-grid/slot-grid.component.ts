@@ -36,9 +36,12 @@ export interface Slot {
     `
       .slot-grid {
         display: grid;
-        /* grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); */
         grid-template-columns: repeat((2, 1fr));
+        /* display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px; */
 
+        /* Flip the grid direction */
         gap: 1rem;
         width: 100%;
       }
