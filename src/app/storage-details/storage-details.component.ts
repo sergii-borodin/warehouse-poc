@@ -27,6 +27,20 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
               [style.width.px]="scaleWidth(storage.width)"
               [style.height.px]="scaleLength(storage.length)"
             >
+              <!-- Gates visualization -->
+              <!-- [style.width.px]=" gate === 'north' || gate === 'south' ? getGateWidth() * 3 :
+              getGateWidth() " [style.height.px]=" gate === 'east' || gate === 'west' ?
+              getGateHeight() * 3 : getGateHeight() " -->
+              @for (gate of storage.gatePositioning; track gate) {
+              <div
+                class="gate gate-{{ gate }}"
+                [style.width.px]="getGateWidth() * 3"
+                [style.height.px]="getGateHeight()"
+              >
+                <span class="gate-label" west-gate="gate === 'west">{{ gate.toUpperCase() }}</span>
+              </div>
+              }
+
               <app-slot-grid
                 [slots]="getSlotsForRendering(storage.slots)"
                 [clickable]="true"
@@ -91,7 +105,7 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
       }
       .storage-rect {
         gap: 1rem;
-        padding: 1rem;
+        padding: 2rem;
         border: 2px solid #333;
         position: relative;
       }
@@ -138,6 +152,51 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
         background: #f8d7da;
         border-color: #721c24;
         color: #721c24;
+      }
+
+      /* Gate styles */
+      .gate {
+        position: absolute;
+        line-height: 0.4;
+        background-color: lightgrey;
+        border: 2px solid #lightgrey;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        /* border-radius: 4px; */
+      }
+
+      .gate-label {
+        color: black;
+        font-weight: bold;
+        font-size: 10px;
+      }
+
+      /* Gate positioning */
+      .gate-north {
+        top: -2px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .gate-south {
+        bottom: -2px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .gate-east {
+        right: -22px;
+        top: 50%;
+        transform: translateY(-50%) rotate(-90deg);
+        /* rotate: -90deg; */
+      }
+
+      .gate-west {
+        left: -22px;
+        top: 50%;
+        transform: translateY(-50%) rotate(90deg);
       }
     `,
   ],
@@ -304,5 +363,15 @@ export class StorageDetailComponent implements OnInit {
       if (right[i]) result.push(right[i]);
     }
     return result;
+  }
+
+  getGateWidth(): number {
+    if (!this.storage) return 0;
+    return Math.max(20, this.scaleWidth(this.storage.gateWidth));
+  }
+
+  getGateHeight(): number {
+    if (!this.storage) return 0;
+    return Math.max(20, this.scaleLength(this.storage.gateHeight));
   }
 }

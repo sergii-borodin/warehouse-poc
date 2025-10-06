@@ -6,6 +6,7 @@
     "storageType": "warehouse",
     "frostFree": true,
     "slotVolume": 100,
+    "gatePositioning": ["north", "south"],
     "gateHeight": 8,
     "gateWidth": 10, 
     "slots": [
@@ -39,6 +40,7 @@
     "storageType": "warehouse",
     "frostFree": false,
         "slotVolume": 100,
+        "gatePositioning": ["north", "south", "east", "west"],
         "gateHeight": 8,
         "gateWidth": 10, 
 
@@ -73,6 +75,7 @@
     "storageType": "warehouse",
     "frostFree": false,
         "slotVolume": 100,
+        "gatePositioning": ["north", "south"],
         "gateHeight": 8,
         "gateWidth": 10, 
 
@@ -96,6 +99,7 @@
     "storageType": "warehouse",
     "frostFree": false,
         "slotVolume": 100,
+        "gatePositioning": ["north", "south"],
         "gateHeight": 8,
         "gateWidth": 10, 
 
@@ -120,6 +124,7 @@
     "storageType": "warehouse",
     "frostFree": true,
         "slotVolume": 100,
+        "gatePositioning": ["north", "south", "east", "west"],
         "gateHeight": 8,
         "gateWidth": 10, 
 
@@ -149,6 +154,7 @@
     "storageType": "warehouse",
     "frostFree": false,
         "slotVolume": 100,
+        "gatePositioning": ["north", "south"],
         "gateHeight": 8,
         "gateWidth": 10, 
 
@@ -172,6 +178,7 @@
     "storageType": "warehouse",
     "frostFree": false,
         "slotVolume": 100,
+        "gatePositioning": ["north", "south", "east", "west"],
         "gateHeight": 8,
         "gateWidth": 10, 
 
@@ -194,6 +201,7 @@
     "storageType": "warehouse",
     "frostFree": false,
         "slotVolume": 100,
+        "gatePositioning": ["north", "south"],
         "gateHeight": 8,
         "gateWidth": 10, 
 
@@ -218,6 +226,7 @@
     "storageType": "warehouse",
     "frostFree": false,
     "slotVolume": 100,
+    "gatePositioning": ["north", "south"],
     "gateHeight": 8,
     "gateWidth": 10, 
     "slots": [
@@ -233,6 +242,7 @@
     "storageType": "outside","address": "Nokken belagt",
     "frostFree": false,
     "slotVolume": 100,
+    "gatePositioning": [],
     "gateHeight": 100,
     "gateWidth": 100, 
     "slots": [
@@ -264,6 +274,7 @@
     "storageType": "outside","address": "Nokken gul firkant",
     "frostFree": false,
     "slotVolume": 100,
+    "gatePositioning": [],
     "gateHeight": 100,
     "gateWidth": 10, 
     "slots": [
@@ -279,6 +290,7 @@
     "storageType": "outside","address": "Amerikavej 6",
     "frostFree": false,
     "slotVolume": 100,
+    "gatePositioning": [],
     "gateHeight": 100,
     "gateWidth": 10, 
     "slots": [
@@ -299,6 +311,7 @@
     "storageType": "outside","address": "Sahara 11",
     "frostFree": false,
     "slotVolume": 100,
+    "gatePositioning": [],
     "gateHeight": 100,
     "gateWidth": 10, 
     "slots": [
@@ -316,6 +329,7 @@
     "storageType": "outside","address": "Sahara 13",
     "frostFree": false,
     "slotVolume": 100,
+    "gatePositioning": [],
     "gateHeight": 100,
     "gateWidth": 10, 
     "slots": [
@@ -338,6 +352,7 @@
     "storageType": "outside","address": "Asienvej 11",
     "frostFree": false,
     "slotVolume": 100,
+    "gatePositioning": [],
     "gateHeight": 100,
     "gateWidth": 10, 
     "slots": [
@@ -357,6 +372,7 @@
     "storageType": "outside","address": "Skydebanevej 14",
     "frostFree": false,
     "slotVolume": 100,
+    "gatePositioning": [],
     "gateHeight": 100,
     "gateWidth": 10,  
     "slots": [

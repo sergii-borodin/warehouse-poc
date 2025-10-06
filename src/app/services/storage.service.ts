@@ -28,6 +28,7 @@ export interface StorageUnit {
   gateWidth: number;
   frostFree: boolean;
   slotVolume: number;
+  gatePositioning: string[];
   slots: Slot[];
 }
 
