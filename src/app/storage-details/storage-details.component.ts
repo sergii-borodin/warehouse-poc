@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faArrowUp } from '@fortawesome/free-solid-svg-icons';
 import { StorageService } from '../services/storage.service';
+import { AuthService, User } from '../services/auth.service';
 import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.component';
 
 @Component({
@@ -68,6 +69,19 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
               Company name
               <input [(ngModel)]="companyName" placeholder="Company name" />
             </label>
+            <label>
+              Responsible Person
+              <select [(ngModel)]="responsiblePerson">
+                <option value="">Select responsible person</option>
+                @for (user of users; track user.username) {
+                <option [value]="user.username">{{ user.username }}</option>
+                }
+              </select>
+            </label>
+            <label>
+              Administrator
+              <input [(ngModel)]="administrator" readonly />
+            </label>
             <div class="dates">
               <div>From: {{ startDate }}</div>
               <div>To: {{ endDate }}</div>
@@ -112,6 +126,19 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
       .rent-form label {
         display: block;
         margin-bottom: 0.5rem;
+      }
+      .rent-form input,
+      .rent-form select {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+        margin-top: 0.25rem;
+      }
+      .rent-form input[readonly] {
+        background-color: #f8f9fa;
+        color: #6c757d;
       }
       .form-actions {
         margin-top: 1rem;
@@ -215,17 +242,27 @@ export class StorageDetailComponent implements OnInit {
   companyName = '';
   startDate = '';
   endDate = '';
+  responsiblePerson = '';
+  administrator = '';
+  users: User[] = [];
   private availableSlotsCache: Slot[] = [];
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.storage = this.storageService.getById(id);
+
+    // Initialize administrator field with logged-in user
+    this.administrator = this.authService.getCurrentUser() || '';
+
+    // Load users for responsible person dropdown
+    this.users = this.authService.getAllUsers();
 
     if (this.storage) {
       this.slotHeightPercent = 100 / this.storage.slots.length;
@@ -269,11 +306,19 @@ export class StorageDetailComponent implements OnInit {
   cancelRent() {
     this.rentFormOpen.set(false);
     this.companyName = '';
+    this.responsiblePerson = '';
     this.refreshAvailableSlots();
   }
 
   confirmRent() {
-    if (!this.selected() || !this.companyName || !this.startDate || !this.endDate) return;
+    if (
+      !this.selected() ||
+      !this.companyName ||
+      !this.responsiblePerson ||
+      !this.startDate ||
+      !this.endDate
+    )
+      return;
     const ok = this.storageService.addBooking(this.storage.id, this.selected()!.id, {
       startDate: this.startDate,
       endDate: this.endDate,
@@ -287,6 +332,7 @@ export class StorageDetailComponent implements OnInit {
       });
       this.rentFormOpen.set(false);
       this.companyName = '';
+      this.responsiblePerson = '';
       this.refreshAvailableSlots();
       this.router.navigate(['/storage']);
     }

@@ -26,6 +26,9 @@ export class AuthService {
     { username: 'michael', password: 'test', role: UserRole.ADMIN },
     { username: 'peter', password: 'test', role: UserRole.ADMIN },
     { username: 'mikkel', password: 'test', role: UserRole.LIMITED },
+    { username: 'tomas', password: 'test', role: UserRole.LIMITED },
+    { username: 'daniel', password: 'test', role: UserRole.LIMITED },
+    { username: 'henrik', password: 'test', role: UserRole.LIMITED },
   ];
 
   constructor(private router: Router) {}
@@ -36,6 +39,10 @@ export class AuthService {
 
   getCurrentUser(): string | null {
     return localStorage.getItem(this.storageKey);
+  }
+
+  getAllUsers(): User[] {
+    return [...this.users];
   }
 
   getCurrentUserRole(): UserRole | null {
