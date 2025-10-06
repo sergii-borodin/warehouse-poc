@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from './services/auth.service';
+import { AuthService, UserRole } from './services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -60,7 +60,13 @@ export class LoginComponent {
   submit() {
     this.error = false;
     if (this.auth.login(this.username, this.password)) {
-      this.router.navigate(['/search']);
+      // Redirect based on user role
+      const userRole = this.auth.getCurrentUserRole();
+      if (userRole === UserRole.LIMITED) {
+        this.router.navigate(['/storage']);
+      } else {
+        this.router.navigate(['/search']);
+      }
     } else {
       this.error = true;
     }

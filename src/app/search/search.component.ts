@@ -23,7 +23,7 @@ import {
     FormsModule,
     RouterModule,
     FontAwesomeModule,
-    BaseChartDirective,
+    // BaseChartDirective,
     StorageFilterComponent,
   ],
   template: `
