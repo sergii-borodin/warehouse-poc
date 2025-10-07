@@ -12,21 +12,21 @@
     "slots": [
       { "id": 1 },
       { "id": 2, "bookings": [
-        { "id":1, "startDate": "2025-09-23", "endDate": "2025-09-28" },
-        { "id":2, "startDate": "2025-09-25", "endDate": "2025-09-30" },
-        { "id":3, "startDate": "2025-10-02", "endDate": "2025-10-05" },
-        { "id":4, "startDate": "2025-10-10", "endDate": "2025-10-15" },
-        { "id":5, "startDate": "2025-10-18", "endDate": "2025-10-22" },
-        { "id":6, "startDate": "2025-10-25", "endDate": "2025-10-29" }
+        { "id":1, "startDate": "2025-09-23", "endDate": "2025-09-28", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355"},
+        { "id":2, "startDate": "2025-09-25", "endDate": "2025-09-30", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":3, "startDate": "2025-10-02", "endDate": "2025-10-05", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":4, "startDate": "2025-10-10", "endDate": "2025-10-15", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":5, "startDate": "2025-10-18", "endDate": "2025-10-22", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":6, "startDate": "2025-10-25", "endDate": "2025-10-29", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
       ]},
       { "id": 3 },
       { "id": 4 },
       { "id": 5, "bookings": [
-        { "id": 7, "startDate": "2025-09-28", "endDate": "2025-10-05" },
-        { "id": 8, "startDate": "2025-10-08", "endDate": "2025-10-12" },
-        { "id": 9, "startDate": "2025-10-15", "endDate": "2025-10-18" },
-        { "id": 10, "startDate": "2025-10-20", "endDate": "2025-10-22" },
-        { "id": 11, "startDate": "2025-10-25", "endDate": "2025-10-29" }
+        { "id": 7, "startDate": "2025-09-28", "endDate": "2025-10-05" , "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355"},
+        { "id": 8, "startDate": "2025-10-08", "endDate": "2025-10-12" , "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355"},
+        { "id": 9, "startDate": "2025-10-15", "endDate": "2025-10-18" , "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355"},
+        { "id": 10, "startDate": "2025-10-20", "endDate": "2025-10-22", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 11, "startDate": "2025-10-25", "endDate": "2025-10-29", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
       ]},
       { "id": 6 },
       { "id": 7 },
@@ -48,23 +48,23 @@
       { "id": 1 },
       { "id": 2 },
       { "id": 3, "bookings": [
-        { "id": 12, "startDate": "2025-09-23", "endDate": "2025-09-28" },
-        { "id": 13, "startDate": "2025-09-28", "endDate": "2025-10-02" },
-        { "id": 14, "startDate": "2025-10-05", "endDate": "2025-10-08" },
-        { "id": 15, "startDate": "2025-10-10", "endDate": "2025-10-12" },
-        { "id": 16, "startDate": "2025-10-15", "endDate": "2025-10-18" },
-        { "id": 17, "startDate": "2025-10-20", "endDate": "2025-10-22" },
-        { "id": 18, "startDate": "2025-10-25", "endDate": "2025-10-29" }
+        { "id": 12, "startDate": "2025-09-23", "endDate": "2025-09-28", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 13, "startDate": "2025-09-28", "endDate": "2025-10-02", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 14, "startDate": "2025-10-05", "endDate": "2025-10-08", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 15, "startDate": "2025-10-10", "endDate": "2025-10-12", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 16, "startDate": "2025-10-15", "endDate": "2025-10-18", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 17, "startDate": "2025-10-20", "endDate": "2025-10-22", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 18, "startDate": "2025-10-25", "endDate": "2025-10-29", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
       ]},
       { "id": 4 },
       { "id": 5, "bookings": [
-        { "id": 19, "startDate": "2025-09-28", "endDate": "2025-10-02" },
-        { "id": 20, "startDate": "2025-10-10", "endDate": "2025-10-12" },
-        { "id": 21, "startDate": "2025-10-14", "endDate": "2025-10-16" }
+        { "id": 19, "startDate": "2025-09-28", "endDate": "2025-10-02", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 20, "startDate": "2025-10-10", "endDate": "2025-10-12", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 21, "startDate": "2025-10-14", "endDate": "2025-10-16", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
       ]},
       { "id": 6, "bookings": [
 
-        { "id": 22, "startDate": "2025-10-07", "endDate": "2025-10-12" }
+        { "id": 22, "startDate": "2025-10-07", "endDate": "2025-10-12", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
       ]}
     ]
   },
@@ -83,10 +83,10 @@
       { "id": 1 },
       { "id": 2 },
       { "id": 3, "bookings": [
-        { "id": 23, "startDate": "2025-09-20", "endDate": "2025-09-27" },
-        { "id": 24, "startDate": "2025-09-28", "endDate": "2025-10-02" },
-        { "id": 25, "startDate": "2025-10-01", "endDate": "2025-10-03" },
-        { "id": 26, "startDate": "2025-10-05", "endDate": "2025-10-12" }
+        { "id": 23, "startDate": "2025-09-20", "endDate": "2025-09-27", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 24, "startDate": "2025-09-28", "endDate": "2025-10-02", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 25, "startDate": "2025-10-01", "endDate": "2025-10-03", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 26, "startDate": "2025-10-05", "endDate": "2025-10-12", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
       ]},
       { "id": 4 },
       { "id": 5 }
@@ -106,9 +106,9 @@
     "slots": [
       { "id": 1 },
       { "id": 2, "bookings": [
-        { "id": 27, "startDate": "2025-09-15", "endDate": "2025-09-22" },
-        { "id": 28, "startDate": "2025-09-25", "endDate": "2025-09-28" },
-       { "id": 29, "startDate": "2025-09-28", "endDate": "2025-10-02" }
+        { "id": 27, "startDate": "2025-09-15", "endDate": "2025-09-22", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 28, "startDate": "2025-09-25", "endDate": "2025-09-28", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+       { "id": 29, "startDate": "2025-09-28", "endDate": "2025-10-02" , "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355"}
 
       ]},
       { "id": 3 },
@@ -130,16 +130,16 @@
 
     "slots": [
       { "id": 1, "bookings": [
-        { "id": 30, "startDate": "2025-09-29", "endDate": "2025-10-06" },
-        { "id": 31, "startDate": "2025-10-08", "endDate": "2025-10-12" }
+        { "id": 30, "startDate": "2025-09-29", "endDate": "2025-10-06", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 31, "startDate": "2025-10-08", "endDate": "2025-10-12", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
       ]},
       { "id": 2 },
       { "id": 3 },
       { "id": 4 },
       { "id": 5 },
       { "id": 6, "bookings": [
-        { "id": 32, "startDate": "2025-10-08", "endDate": "2025-10-14" },
-        { "id": 33, "startDate": "2025-10-16", "endDate": "2025-10-20" }
+        { "id": 32, "startDate": "2025-10-08", "endDate": "2025-10-14", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 33, "startDate": "2025-10-16", "endDate": "2025-10-20", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
       ]},
       { "id": 7 },
       { "id": 8 },
@@ -161,10 +161,10 @@
     "slots": [
       { "id": 1 },
       { "id": 2, "bookings": [
-        { "id": 34, "startDate": "2025-09-28", "endDate": "2025-10-02" },
-        { "id": 35, "startDate": "2025-10-01", "endDate": "2025-10-10" },
-        { "id": 36, "startDate": "2025-10-12", "endDate": "2025-10-15" },
-        { "id": 37, "startDate": "2025-10-18", "endDate": "2025-10-22" }
+        { "id": 34, "startDate": "2025-09-28", "endDate": "2025-10-02", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 35, "startDate": "2025-10-01", "endDate": "2025-10-10", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 36, "startDate": "2025-10-12", "endDate": "2025-10-15", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 37, "startDate": "2025-10-18", "endDate": "2025-10-22", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
       ]},
       { "id": 3 },
       { "id": 4 },
@@ -185,8 +185,8 @@
     "slots": [
       { "id": 1 },
       { "id": 2, "bookings": [
-        { "id": 38, "startDate": "2025-09-18", "endDate": "2025-09-25" },
-        { "id": 39, "startDate": "2025-09-28", "endDate": "2025-10-02" }
+        { "id": 38, "startDate": "2025-09-18", "endDate": "2025-09-25", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id": 39, "startDate": "2025-09-28", "endDate": "2025-10-02", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
       ]},
       { "id": 3 },
       { "id": 4 },
@@ -207,11 +207,11 @@
 
     "slots": [
       { "id": 1, "bookings": [
-        { "id":40, "startDate": "2025-09-28", "endDate": "2025-10-02" },
-        { "id":41, "startDate": "2025-10-03", "endDate": "2025-10-08" },
-        { "id":42, "startDate": "2025-10-10", "endDate": "2025-10-12" },
-        { "id":43, "startDate": "2025-10-15", "endDate": "2025-10-18" },
-        { "id":44, "startDate": "2025-10-20", "endDate": "2025-10-23" }
+        { "id":40, "startDate": "2025-09-28", "endDate": "2025-10-02", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":41, "startDate": "2025-10-03", "endDate": "2025-10-08", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":42, "startDate": "2025-10-10", "endDate": "2025-10-12", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":43, "startDate": "2025-10-15", "endDate": "2025-10-18", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":44, "startDate": "2025-10-20", "endDate": "2025-10-23", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
       ]},
       { "id": 2 },
       { "id": 3 },
@@ -247,22 +247,22 @@
     "gateWidth": 100, 
     "slots": [
       { "id": 1, "bookings": [
-        { "id":45, "startDate": "2025-09-21", "endDate": "2025-09-26" },
-        { "id":46, "startDate": "2025-09-28", "endDate": "2025-10-01" },
-        { "id":47, "startDate": "2025-10-03", "endDate": "2025-10-07" },
-        { "id":48, "startDate": "2025-10-15", "endDate": "2025-10-20" }
+        { "id":45, "startDate": "2025-09-21", "endDate": "2025-09-26", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":46, "startDate": "2025-09-28", "endDate": "2025-10-01", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":47, "startDate": "2025-10-03", "endDate": "2025-10-07", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":48, "startDate": "2025-10-15", "endDate": "2025-10-20", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
       ]},
       { "id": 2, "bookings": [
-        { "id":49, "startDate": "2025-09-21", "endDate": "2025-09-26" },
-        { "id":50, "startDate": "2025-09-28", "endDate": "2025-10-01" },
-        { "id":51, "startDate": "2025-10-03", "endDate": "2025-10-07" },
-        { "id":52, "startDate": "2025-10-15", "endDate": "2025-10-20" }
+        { "id":49, "startDate": "2025-09-21", "endDate": "2025-09-26", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":50, "startDate": "2025-09-28", "endDate": "2025-10-01", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":51, "startDate": "2025-10-03", "endDate": "2025-10-07", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":52, "startDate": "2025-10-15", "endDate": "2025-10-20", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
       ] },
       { "id": 3, "bookings": [
-        { "id":53, "startDate": "2025-09-21", "endDate": "2025-09-26" },
-        { "id":54, "startDate": "2025-09-28", "endDate": "2025-10-01" },
-        { "id":55, "startDate": "2025-10-03", "endDate": "2025-10-07" },
-        { "id":56, "startDate": "2025-10-15", "endDate": "2025-10-20" }
+        { "id":53, "startDate": "2025-09-21", "endDate": "2025-09-26", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":54, "startDate": "2025-09-28", "endDate": "2025-10-01", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":55, "startDate": "2025-10-03", "endDate": "2025-10-07", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":56, "startDate": "2025-10-15", "endDate": "2025-10-20", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
       ] },
       { "id": 4 },
       { "id": 5 }
@@ -295,8 +295,8 @@
     "gateWidth": 10, 
     "slots": [
       { "id": 1, "bookings": [
-        { "id":57, "startDate": "2025-09-30", "endDate": "2025-10-05" },
-        { "id":58, "startDate": "2025-10-07", "endDate": "2025-10-09" }
+        { "id":57, "startDate": "2025-09-30", "endDate": "2025-10-05", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":58, "startDate": "2025-10-07", "endDate": "2025-10-09", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
       ]},
       { "id": 2 },
       { "id": 3 },
@@ -317,7 +317,7 @@
     "slots": [
       { "id": 1 },
       { "id": 2, "bookings":[
-        { "id":59, "startDate": "2025-09-28", "endDate": "2025-10-28" }
+        { "id":59, "startDate": "2025-09-28", "endDate": "2025-10-28", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
 ] },
       { "id": 3 },
       { "id": 4 }
@@ -334,13 +334,13 @@
     "gateWidth": 10, 
     "slots": [
       { "id": 1, "bookings": [
-        { "id":60, "startDate": "2025-09-22", "endDate": "2025-09-28" },
-        { "id":61, "startDate": "2025-10-01", "endDate": "2025-10-05" },
-        { "id":62, "startDate": "2025-10-07", "endDate": "2025-10-10" }
+        { "id":60, "startDate": "2025-09-22", "endDate": "2025-09-28", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":61, "startDate": "2025-10-01", "endDate": "2025-10-05", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":62, "startDate": "2025-10-07", "endDate": "2025-10-10", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
       ]},
       { "id": 2 },
       { "id": 3, "bookings":[
-        { "id":63, "startDate": "2025-09-28", "endDate": "2025-10-02" }
+        { "id":63, "startDate": "2025-09-28", "endDate": "2025-10-02", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
 ] },
       { "id": 4 },
       { "id": 5 }
@@ -359,7 +359,7 @@
       { "id": 1 },
       { "id": 2 },
       { "id": 3, "bookings":[        
-        { "id":64, "startDate": "2025-09-28", "endDate": "2025-10-28" }
+        { "id":64, "startDate": "2025-09-28", "endDate": "2025-10-28", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
 ]  },
       { "id": 4 },
       { "id": 5 },
@@ -377,19 +377,19 @@
     "gateWidth": 10,  
     "slots": [
       { "id": 1, "bookings": [
-        { "id":65, "startDate": "2025-09-26", "endDate": "2025-10-01" },
-        { "id":66, "startDate": "2025-10-03", "endDate": "2025-10-06" }
+        { "id":65, "startDate": "2025-09-26", "endDate": "2025-10-01", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
+        { "id":66, "startDate": "2025-10-03", "endDate": "2025-10-06", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
       ]},
       { "id": 2 },
       { "id": 3 },
       { "id": 4, "bookings":[        
-        { "id":67, "startDate": "2025-09-28", "endDate": "2025-10-28" }
+        { "id":67, "startDate": "2025-09-28", "endDate": "2025-10-28", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
 ] },
       { "id": 5 },
       { "id": 6 },
       { "id": 7 },
       { "id": 8, "bookings":[        
-        { "id":68, "startDate": "2025-09-28", "endDate": "2025-10-28" }
+        { "id":68, "startDate": "2025-09-28", "endDate": "2025-10-28", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" }
 ] },
       { "id": 9 },
       { "id": 10 }

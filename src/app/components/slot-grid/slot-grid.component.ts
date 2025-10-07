@@ -22,6 +22,7 @@ export interface Slot {
         [class.available]="isSlotAvailable(slot)"
         [class.unavailable]="!isSlotAvailable(slot)"
         [class.clickable]="clickable"
+        [class.selected]="isSlotSelected(slot)"
         (click)="onSlotClick(slot)"
       >
         <div class="slot-name">{{ getSlotName(slot) }}</div>
@@ -80,6 +81,22 @@ export interface Slot {
         cursor: not-allowed;
       }
 
+      .slot.selected {
+        background: #0b63d1;
+        border-color: #1d4ed8;
+        color: white;
+        box-shadow: 0 0 0 3px rgba(11, 99, 209, 0.3);
+        transform: scale(1.05);
+      }
+
+      .slot.selected .slot-name {
+        font-weight: bold;
+      }
+
+      .slot.selected .slot-status {
+        opacity: 1;
+      }
+
       .slot-name {
         font-weight: bold;
         margin-bottom: 0.25rem;
@@ -118,6 +135,7 @@ export class SlotGridComponent {
   @Input() customDateRange?: { start: Date; end: Date };
   @Input() availableText = 'Available';
   @Input() unavailableText = 'Not available';
+  @Input() selectedSlot?: Slot | null;
 
   @Output() slotClicked = new EventEmitter<Slot>();
 
@@ -125,6 +143,10 @@ export class SlotGridComponent {
     if (this.clickable && this.isSlotAvailable(slot)) {
       this.slotClicked.emit(slot);
     }
+  }
+
+  isSlotSelected(slot: Slot): boolean {
+    return this.selectedSlot ? this.selectedSlot.id === slot.id : false;
   }
 
   getSlotName(slot: Slot): string {

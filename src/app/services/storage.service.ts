@@ -4,6 +4,11 @@ import storages from '../../storages.json';
 export interface SlotBooking {
   startDate: string; // ISO YYYY-MM-DD
   endDate: string; // ISO YYYY-MM-DD
+  responsiblePerson: string;
+  administrator: string;
+  companyName: string;
+  companyEmail: string;
+  companyTlf: string;
 }
 
 export interface Slot {

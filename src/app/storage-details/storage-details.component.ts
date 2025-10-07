@@ -49,6 +49,7 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
                 [customDateRange]="getDateRange()"
                 [availableText]="'Available'"
                 [unavailableText]="'Not available'"
+                [selectedSlot]="selected()"
                 (slotClicked)="selectSlot($event)"
               ></app-slot-grid>
             </div>
@@ -77,6 +78,14 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
                 <option [value]="user.username">{{ user.username }}</option>
                 }
               </select>
+            </label>
+            <label>
+              Client email
+              <input [(ngModel)]="companyEmail" placeholder="provide company email" />
+            </label>
+            <label>
+              Client TLF
+              <input [(ngModel)]="companyTlf" placeholder="provide client TLF" />
             </label>
             <label>
               Administrator
@@ -240,6 +249,8 @@ export class StorageDetailComponent implements OnInit {
   );
 
   companyName = '';
+  companyEmail = '';
+  companyTlf = '';
   startDate = '';
   endDate = '';
   responsiblePerson = '';
@@ -291,9 +302,17 @@ export class StorageDetailComponent implements OnInit {
 
   selectSlot(slot: Slot) {
     if (this.datesChosen() && this.isAvailable(slot)) {
-      this.selected.set(slot);
-      this.rentFormOpen.set(false);
-      this.confirmation.set(null);
+      // If clicking the same slot, deselect it
+      if (this.selected() && this.selected()!.id === slot.id) {
+        this.selected.set(null);
+        this.rentFormOpen.set(false);
+        this.confirmation.set(null);
+      } else {
+        // Select the new slot
+        this.selected.set(slot);
+        this.rentFormOpen.set(false);
+        this.confirmation.set(null);
+      }
     }
   }
 
@@ -315,13 +334,20 @@ export class StorageDetailComponent implements OnInit {
       !this.selected() ||
       !this.companyName ||
       !this.responsiblePerson ||
+      !this.companyEmail ||
       !this.startDate ||
-      !this.endDate
+      !this.endDate ||
+      !this.companyTlf
     )
       return;
     const ok = this.storageService.addBooking(this.storage.id, this.selected()!.id, {
       startDate: this.startDate,
       endDate: this.endDate,
+      responsiblePerson: this.responsiblePerson,
+      companyName: this.companyName,
+      companyEmail: this.companyEmail,
+      administrator: this.administrator,
+      companyTlf: this.companyTlf,
     });
     if (ok) {
       this.confirmation.set({

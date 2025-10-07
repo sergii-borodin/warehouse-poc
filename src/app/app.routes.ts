@@ -4,6 +4,7 @@ import { StorageDetailComponent } from './storage-details/storage-details.compon
 import { SearchComponent } from './search/search.component';
 import { LoginComponent } from './login.component';
 import { TimelineComponent } from './timeline/timeline.component';
+import { DeadlineComponent } from './deadline/deadline.component';
 import { AccessDeniedComponent } from './access-denied.component';
 import { roleGuard } from './role.guard';
 
@@ -13,6 +14,7 @@ export const routes: Routes = [
   { path: 'access-denied', component: AccessDeniedComponent },
   { path: 'search', component: SearchComponent, canActivate: [roleGuard] },
   { path: 'timeline', component: TimelineComponent, canActivate: [roleGuard] },
+  { path: 'deadline', component: DeadlineComponent, canActivate: [roleGuard] },
   { path: 'storage', component: StorageListComponent, canActivate: [roleGuard] },
   { path: 'storage/:id', component: StorageDetailComponent, canActivate: [roleGuard] },
   { path: '**', redirectTo: '' },

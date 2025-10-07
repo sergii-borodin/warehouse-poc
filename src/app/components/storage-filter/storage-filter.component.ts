@@ -65,7 +65,7 @@ export interface FilterState {
         </li>
         <li class="storage-type-select">
           <label>
-            select storage type
+            Storage type
             <select name="" id="" [(ngModel)]="filterState.storageType">
               <option value="warehouse">Warehouse</option>
               <option value="outside">Outside</option>
