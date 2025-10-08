@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
-import { StorageService } from '../services/storage.service';
+import { StorageService, StorageUnit } from '../services/storage.service';
 import { StorageUtilsService } from '../services/storage-utils.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -30,6 +30,7 @@ import {
         <app-storage-filter
           [filterState]="filterState"
           (filterStateChange)="onFilterStateChange($event)"
+          (search)="onSearch()"
         >
         </app-storage-filter>
       </div>
@@ -107,6 +108,12 @@ import {
       .wrap {
         padding: 1rem;
         font-family: Arial, sans-serif;
+        transition: opacity 0.3s ease;
+      }
+
+      .wrap.hidden {
+        opacity: 0;
+        pointer-events: none;
       }
       .header {
         display: flex;
@@ -297,9 +304,9 @@ import {
     `,
   ],
 })
-export class StorageListComponent {
+export class StorageListComponent implements OnInit {
   faTemperatureArrowUp = faTemperatureArrowUp;
-  storages: any[];
+  storages: any[] = [];
   filteredStorages: any[] = [];
   firstActiveId?: number;
   secondActiveId?: number;
@@ -327,9 +334,19 @@ export class StorageListComponent {
     private storageService: StorageService,
     private storageUtils: StorageUtilsService
   ) {
-    this.storages = this.storageService.getAll();
-    this.storages.forEach((storage) => this.storageMap.set(storage.id, storage));
-    this.applyFilters(); // Apply initial filters
+    this.storages = [];
+  }
+
+  ngOnInit() {
+    console.log('Storage-list component ngOnInit called');
+
+    // Load storages asynchronously and then apply initial filters
+    this.storageService.getAllAsync().subscribe((storages) => {
+      console.log('Storages received in storage-list component:', storages);
+      this.storages = storages;
+      this.storages.forEach((storage) => this.storageMap.set(storage.id, storage));
+      this.applyFilters(); // Apply initial filters
+    });
   }
 
   selectStorage(newId: number) {
@@ -382,7 +399,7 @@ export class StorageListComponent {
     }
 
     // Filter by gate height and width
-    if (this.filterState.cargoHeight && this.filterState.cargoWidth) {
+    if (this.filterState.cargoHeight > 0 && this.filterState.cargoWidth > 0) {
       filtered = filtered.filter(
         (storage) =>
           storage.gateHeight >= +this.filterState.cargoHeight &&
@@ -456,6 +473,10 @@ export class StorageListComponent {
 
   onFilterStateChange(newFilterState: FilterState) {
     this.filterState = newFilterState;
+    // Don't apply filters automatically - only when search button is clicked
+  }
+
+  onSearch() {
     this.applyFilters();
   }
 
@@ -478,11 +499,11 @@ export class StorageListComponent {
     return storage ? this.storageUtils.getTotalSlotCount(storage) : 0;
   }
 
-  getAvailableMeters(storage: any): number {
+  getAvailableMeters(storage: StorageUnit): number {
     return this.storageUtils.getAvailableMeters(storage);
   }
 
-  getFullStorageCapacity(storage: any): number {
+  getFullStorageCapacity(storage: StorageUnit): number {
     return this.storageUtils.getFullStorageCapacity(storage);
   }
 }

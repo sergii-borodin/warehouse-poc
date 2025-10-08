@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { StorageService, StorageUnit, Slot, SlotBooking } from '../services/storage.service';
 import { StorageUtilsService } from '../services/storage-utils.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -31,10 +32,16 @@ import {
     <div class="page">
       <section class="search-section">
         <h2>Find Availability</h2>
-        <app-storage-filter [filterState]="filterState"> </app-storage-filter>
+        <app-storage-filter
+          [filterState]="filterState"
+          (filterStateChange)="onFilterStateChange($event)"
+          (search)="search()"
+        >
+        </app-storage-filter>
       </section>
       @if (searched) {
       <div class="results">
+        <h3>Results</h3>
         <div class="date-range-display">
           <div class="date-info">
             <div>
@@ -64,10 +71,8 @@ import {
               >
               }
             </div>
-            <button (click)="search()" class="search-button">Search</button>
           </div>
         </div>
-        <h3>Results</h3>
 
         <div class="hint" *ngIf="!filteredStorages.length">No warehouses match your criteria.</div>
         <div class="cards">
@@ -120,6 +125,12 @@ import {
     `
       .page {
         padding: 1rem;
+        transition: opacity 0.3s ease;
+      }
+
+      .page.hidden {
+        opacity: 0;
+        pointer-events: none;
       }
       .search-section {
         display: flex;
@@ -310,20 +321,6 @@ import {
         justify-content: space-between;
         align-items: center;
       }
-      .search-button {
-        border-radius: 6px;
-        padding: 0.5rem 1rem;
-        background-color: #0b63d1;
-        color: white;
-        border: none;
-        cursor: pointer;
-        font-size: 0.9rem;
-        font-weight: 500;
-        transition: background-color 0.3s ease;
-        &:hover {
-          background-color: rgb(43, 109, 190);
-        }
-      }
       .date-text {
         color: #374151;
       }
@@ -358,14 +355,17 @@ import {
     `,
   ],
 })
-export class SearchComponent {
+export class SearchComponent implements OnInit, OnDestroy {
   faTemperatureArrowUp = faTemperatureArrowUp;
   faWarehouse = faWarehouse;
   faTentArrowDownToLine = faTentArrowDownToLine;
   faTent = faTent;
   searched = false;
   filteredStorages: StorageUnit[] = [];
-  private all: StorageUnit[];
+  private all: StorageUnit[] = [];
+  private searchStartDate?: string;
+  private searchEndDate?: string;
+  private subscriptions: Subscription[] = [];
 
   // Filter state object
   filterState: FilterState = {
@@ -374,8 +374,8 @@ export class SearchComponent {
     minAvailableMeters: null,
     minAvailableMetersError: '',
     storageType: 'all',
-    cargoHeight: 1,
-    cargoWidth: 1,
+    cargoHeight: 0,
+    cargoWidth: 0,
     frostFreeOnly: false,
     mafiTrailer: false,
   };
@@ -409,24 +409,39 @@ export class SearchComponent {
     private storageService: StorageService,
     private storageUtils: StorageUtilsService
   ) {
-    this.all = this.storageService.getAll();
+    this.all = [];
+    console.log('Search component constructor');
   }
 
   ngOnInit() {
-    // run initial search on load
-    this.search();
+    console.log('Search component ngOnInit called');
+
+    // Load storages and run initial search
+    this.storageService.getAllAsync().subscribe((storages) => {
+      console.log('Storages received in search component:', storages?.length, 'items');
+      this.all = storages || [];
+      console.log('this.all is now:', this.all.length, 'items');
+      // run initial search on load
+      this.search();
+    });
   }
 
-  // onFilterStateChange(newFilterState: FilterState) {
-  //   this.filterState = newFilterState;
-  //   this.search();
-  // }
+  ngOnDestroy() {
+    // Clean up subscriptions
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
+  }
+
+  onFilterStateChange(newFilterState: FilterState) {
+    this.filterState = newFilterState;
+  }
 
   search() {
+    console.log('Search method called, this.all.length:', this.all.length);
     this.searched = true;
 
     // Validate inputs
     if (!this.filterState.startDate || !this.filterState.endDate) {
+      console.log('Missing dates, clearing results');
       this.filteredStorages = [];
       return;
     }
@@ -435,6 +450,10 @@ export class SearchComponent {
       this.filteredStorages = [];
       return;
     }
+
+    // Store the search dates so they don't change when filter state changes
+    this.searchStartDate = this.filterState.startDate;
+    this.searchEndDate = this.filterState.endDate;
 
     const start = new Date(this.filterState.startDate);
     const end = new Date(this.filterState.endDate);
@@ -449,26 +468,23 @@ export class SearchComponent {
       this.filterState.mafiTrailer ? storage.gateHeight - 1 >= this.filterState.cargoHeight : true
     );
 
-    // Then filter by available slots for the date range and calculate available meters
-    filteredStorages = filteredStorages
-      .map((storage) => ({
-        ...storage,
-        slots: storage.slots.filter((s: any) => this.slotMatches(s, start, end)),
-      }))
-      .filter((storage) => storage.slots.length > 0);
-
-    // Finally filter by minimum available meters
+    // Filter by minimum available meters (using the new method that checks date range)
     if (this.filterState.minAvailableMeters && this.filterState.minAvailableMeters > 0) {
       filteredStorages = filteredStorages.filter((storage) => {
-        const availableMeters = storage.slots.length * (storage.slotVolume || 0);
+        const availableMeters = this.getAvailableMeters(storage);
         console.log(
-          `Warehouse ${storage.name}: ${storage.slots.length} available slots * ${
+          `Warehouse ${storage.name}: ${this.getAvailableSlotCount(storage)} available slots * ${
             storage.slotVolume || 0
           } = ${availableMeters} meters`
         );
         return availableMeters >= this.filterState.minAvailableMeters!;
       });
     }
+
+    // Filter out storages with no available slots for the date range
+    filteredStorages = filteredStorages.filter(
+      (storage) => this.getAvailableSlotCount(storage) > 0
+    );
 
     // Finally filter by storage type
     if (this.filterState.storageType !== 'all') {
@@ -478,7 +494,7 @@ export class SearchComponent {
     }
 
     // Finally filter by gate height and width
-    if (this.filterState.cargoHeight && this.filterState.cargoWidth) {
+    if (this.filterState.cargoHeight > 0 && this.filterState.cargoWidth > 0) {
       filteredStorages = filteredStorages.filter(
         (storage) =>
           storage.gateHeight >= +this.filterState.cargoHeight &&
@@ -500,13 +516,6 @@ export class SearchComponent {
     }
   }
 
-  slotMatches(slot: Slot, start: Date, end: Date): boolean {
-    const bookings: SlotBooking[] = slot.bookings ?? [];
-    return !bookings.some((b) =>
-      this.rangesOverlap(start, end, new Date(b.startDate), new Date(b.endDate))
-    );
-  }
-
   rangesOverlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date): boolean {
     const aS = new Date(aStart.getFullYear(), aStart.getMonth(), aStart.getDate()).getTime();
     const aE = new Date(aEnd.getFullYear(), aEnd.getMonth(), aEnd.getDate()).getTime();
@@ -515,8 +524,21 @@ export class SearchComponent {
     return aS <= bE && bS <= aE;
   }
 
+  private isSlotAvailableForDateRange(slot: Slot, start: Date, end: Date): boolean {
+    if (!slot.bookings || slot.bookings.length === 0) return true;
+
+    return !slot.bookings.some((booking) =>
+      this.rangesOverlap(start, end, new Date(booking.startDate), new Date(booking.endDate))
+    );
+  }
+
   getAvailableSlotCount(storage: StorageUnit): number {
-    return this.storageUtils.getAvailableSlotCount(storage);
+    // Use the same logic as storage-utils but with the search date range (not current filter state)
+    if (!storage.slots || !this.searchStartDate || !this.searchEndDate) return 0;
+    const start = new Date(this.searchStartDate);
+    const end = new Date(this.searchEndDate);
+    return storage.slots.filter((slot) => this.isSlotAvailableForDateRange(slot, start, end))
+      .length;
   }
 
   getTotalSlotCount(storageId: number): number {
@@ -529,12 +551,17 @@ export class SearchComponent {
   }
 
   getAvailableMeters(storage: StorageUnit): number {
-    return this.storageUtils.getAvailableMeters(storage);
+    // Use the same logic as storage-utils but with the selected date range
+    const availableSlots = this.getAvailableSlotCount(storage);
+    return availableSlots * (storage.slotVolume || 0);
   }
 
   getCapacityChartData(storage: StorageUnit): ChartConfiguration<'doughnut'>['data'] {
     const totalSlots = this.getTotalSlotCount(storage.id);
-    const availableSlots = this.getAvailableSlotCount(storage);
+    const availableSlots = this.getAvailableSlotCount(storage); // This is the filtered slots count
+    // For the chart, we want to show available vs booked for the selected date range
+    // Since availableSlots is already the count of slots available for the date range,
+    // bookedSlots should be the remaining slots that are booked during this period
     const bookedSlots = totalSlots - availableSlots;
 
     return {

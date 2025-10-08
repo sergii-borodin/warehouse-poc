@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
-import storages from '../../storages.json';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { environment } from '../../environments/environment';
+import storages from '../../assets/storages.json';
 
 export interface SlotBooking {
   startDate: string; // ISO YYYY-MM-DD
@@ -39,18 +41,42 @@ export interface StorageUnit {
 
 @Injectable({ providedIn: 'root' })
 export class StorageService {
-  private storages: StorageUnit[];
+  private storages: StorageUnit[] = [];
+  private storagesSubject = new BehaviorSubject<StorageUnit[]>([]);
+  public storages$ = this.storagesSubject.asObservable();
+
+  private isInitialized = false;
 
   constructor() {
-    this.storages = storages as StorageUnit[];
+    console.log('StorageService constructor called');
+    this.loadStorages();
   }
 
-  getAll() {
+  private loadStorages(): void {
+    console.log('loadStorages called');
+
+    try {
+      console.log('Loading storages from imported data...');
+      this.storages = storages as StorageUnit[];
+      this.storagesSubject.next(this.storages);
+      this.isInitialized = true;
+      console.log('Data loaded successfully from import:', this.storages?.length, 'items');
+    } catch (error) {
+      console.error('Error loading storages from import:', error);
+      this.isInitialized = true;
+    }
+  }
+
+  getAll(): StorageUnit[] {
     return this.storages;
   }
 
-  getById(id: number) {
-    return this.storages.find((s) => s.id === id);
+  getAllAsync(): Observable<StorageUnit[]> {
+    return this.storages$;
+  }
+
+  getById(id: number): StorageUnit | undefined {
+    return this.storages?.find((s) => s.id === id);
   }
 
   addBooking(storageId: number, slotId: number, booking: SlotBooking): boolean {
@@ -63,11 +89,12 @@ export class StorageService {
     return true;
   }
 
-  totalStorageCapacity() {
+  totalStorageCapacity(): number {
     const capacity = this.storages.reduce(
       (accumulator, storage) => accumulator + storage.slots.length,
       0
     );
-    console.log('capacity', capacity);
+    console.log('Total storage capacity:', capacity);
+    return capacity;
   }
 }
