@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { StorageService, StorageUnit, Slot, SlotBooking } from '../services/storage.service';
+import { StorageUtilsService } from '../services/storage-utils.service';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faWarehouse } from '@fortawesome/free-solid-svg-icons';
 import { faTentArrowDownToLine } from '@fortawesome/free-solid-svg-icons';
@@ -403,7 +404,11 @@ export class SearchComponent {
     cutout: '60%',
   };
 
-  constructor(private router: Router, private storageService: StorageService) {
+  constructor(
+    private router: Router,
+    private storageService: StorageService,
+    private storageUtils: StorageUtilsService
+  ) {
     this.all = this.storageService.getAll();
   }
 
@@ -511,24 +516,20 @@ export class SearchComponent {
   }
 
   getAvailableSlotCount(storage: StorageUnit): number {
-    return storage.slots?.length ?? 0;
+    return this.storageUtils.getAvailableSlotCount(storage);
   }
 
   getTotalSlotCount(storageId: number): number {
-    return this.all.find((s: StorageUnit) => s.id === storageId)?.slots?.length ?? 0;
+    const storage = this.all.find((s: StorageUnit) => s.id === storageId);
+    return storage ? this.storageUtils.getTotalSlotCount(storage) : 0;
   }
 
   getFullStorageCapacity(storage: StorageUnit): number {
-    return (
-      (this.all.find((s: StorageUnit) => s.id === storage.id)?.slots?.length ?? 0) *
-      storage.slotVolume
-    );
+    return this.storageUtils.getFullStorageCapacity(storage);
   }
 
   getAvailableMeters(storage: StorageUnit): number {
-    const availableSlots = storage.slots?.length ?? 0;
-    const slotVolume = storage.slotVolume ?? 0;
-    return availableSlots * slotVolume;
+    return this.storageUtils.getAvailableMeters(storage);
   }
 
   getCapacityChartData(storage: StorageUnit): ChartConfiguration<'doughnut'>['data'] {

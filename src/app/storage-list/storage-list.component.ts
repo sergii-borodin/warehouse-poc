@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { StorageService } from '../services/storage.service';
+import { StorageUtilsService } from '../services/storage-utils.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -67,7 +68,14 @@ import {
             [class.selected-first]="s.id === firstActiveId"
             [class.selected-second]="s.id === secondActiveId"
             [attr.aria-pressed]="s.id === firstActiveId || s.id === secondActiveId"
-          ></button>
+          >
+            <div class="slots">
+              {{ getAvailableSlotCount(s) }}/{{ getTotalSlotCount(s.id) }} available slot(s)
+            </div>
+            <div class="meters" *ngIf="s.slotVolume">
+              {{ getAvailableMeters(s) }}/{{ getFullStorageCapacity(s) }}m² available
+            </div>
+          </button>
           <span *ngIf="s.gateHeight && s.gateWidth">{{ s.gateHeight }}x{{ s.gateWidth }}</span>
         </div>
         }
@@ -210,6 +218,23 @@ import {
         visibility: visible;
         opacity: 1;
       }
+
+      .slots,
+      .meters {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin: 0.25rem 0;
+        text-align: center;
+      }
+
+      .slots {
+        font-weight: 600;
+        color: #374151;
+      }
+
+      .meters {
+        font-style: italic;
+      }
       .detail-overview-container {
         display: flex;
         gap: 3rem;
@@ -297,7 +322,11 @@ export class StorageListComponent {
 
   private storageMap = new Map<number, any>();
 
-  constructor(private router: Router, private storageService: StorageService) {
+  constructor(
+    private router: Router,
+    private storageService: StorageService,
+    private storageUtils: StorageUtilsService
+  ) {
     this.storages = this.storageService.getAll();
     this.storages.forEach((storage) => this.storageMap.set(storage.id, storage));
     this.applyFilters(); // Apply initial filters
@@ -437,5 +466,23 @@ export class StorageListComponent {
       month: 'short',
       day: 'numeric',
     });
+  }
+
+  // Delegate methods to the utility service
+  getAvailableSlotCount(storage: any): number {
+    return this.storageUtils.getAvailableSlotCount(storage);
+  }
+
+  getTotalSlotCount(storageId: number): number {
+    const storage = this.getStorageById(storageId);
+    return storage ? this.storageUtils.getTotalSlotCount(storage) : 0;
+  }
+
+  getAvailableMeters(storage: any): number {
+    return this.storageUtils.getAvailableMeters(storage);
+  }
+
+  getFullStorageCapacity(storage: any): number {
+    return this.storageUtils.getFullStorageCapacity(storage);
   }
 }
