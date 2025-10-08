@@ -243,8 +243,8 @@
     "frostFree": false,
     "slotVolume": 100,
     "gatePositioning": [],
-    "gateHeight": 100,
-    "gateWidth": 100, 
+    "gateHeight": null,
+    "gateWidth": null, 
     "slots": [
       { "id": 1, "bookings": [
         { "id":45, "startDate": "2025-09-21", "endDate": "2025-09-26", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
@@ -275,8 +275,8 @@
     "frostFree": false,
     "slotVolume": 100,
     "gatePositioning": [],
-    "gateHeight": 100,
-    "gateWidth": 10, 
+    "gateHeight": null,
+    "gateWidth": null, 
     "slots": [
       { "id": 1 },
       { "id": 2 },
@@ -291,8 +291,8 @@
     "frostFree": false,
     "slotVolume": 100,
     "gatePositioning": [],
-    "gateHeight": 100,
-    "gateWidth": 10, 
+    "gateHeight": null,
+    "gateWidth": null, 
     "slots": [
       { "id": 1, "bookings": [
         { "id":57, "startDate": "2025-09-30", "endDate": "2025-10-05", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
@@ -312,8 +312,8 @@
     "frostFree": false,
     "slotVolume": 100,
     "gatePositioning": [],
-    "gateHeight": 100,
-    "gateWidth": 10, 
+    "gateHeight": null,
+    "gateWidth": null, 
     "slots": [
       { "id": 1 },
       { "id": 2, "bookings":[
@@ -330,8 +330,8 @@
     "frostFree": false,
     "slotVolume": 100,
     "gatePositioning": [],
-    "gateHeight": 100,
-    "gateWidth": 10, 
+    "gateHeight": null,
+    "gateWidth": null, 
     "slots": [
       { "id": 1, "bookings": [
         { "id":60, "startDate": "2025-09-22", "endDate": "2025-09-28", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },
@@ -353,8 +353,8 @@
     "frostFree": false,
     "slotVolume": 100,
     "gatePositioning": [],
-    "gateHeight": 100,
-    "gateWidth": 10, 
+    "gateHeight": null,
+    "gateWidth": null, 
     "slots": [
       { "id": 1 },
       { "id": 2 },
@@ -373,8 +373,8 @@
     "frostFree": false,
     "slotVolume": 100,
     "gatePositioning": [],
-    "gateHeight": 100,
-    "gateWidth": 10,  
+    "gateHeight": null,
+    "gateWidth": null,  
     "slots": [
       { "id": 1, "bookings": [
         { "id":65, "startDate": "2025-09-26", "endDate": "2025-10-01", "administrator": "claus", "responsiblePerson": "mikkel", "companyName": "Company 1", "companyEmail": "test.email@gmail.com", "companyTlf": "+4533553355" },

@@ -23,18 +23,14 @@ import {
     FormsModule,
     RouterModule,
     FontAwesomeModule,
-    // BaseChartDirective,
+    BaseChartDirective,
     StorageFilterComponent,
   ],
   template: `
     <div class="page">
       <section class="search-section">
         <h2>Find Availability</h2>
-        <app-storage-filter
-          [filterState]="filterState"
-          (filterStateChange)="onFilterStateChange($event)"
-        >
-        </app-storage-filter>
+        <app-storage-filter [filterState]="filterState"> </app-storage-filter>
       </section>
       @if (searched) {
       <div class="results">
@@ -88,7 +84,7 @@ import {
               </div>
 
               <div class="card-head-right">
-                <!-- <div class="capacity-chart">
+                <div class="capacity-chart">
                   <canvas
                     baseChart
                     [data]="getCapacityChartData(storage)"
@@ -98,7 +94,7 @@ import {
                     height="20"
                   >
                   </canvas>
-                </div> -->
+                </div>
               </div>
             </div>
             <div class="slots">
@@ -416,10 +412,10 @@ export class SearchComponent {
     this.search();
   }
 
-  onFilterStateChange(newFilterState: FilterState) {
-    this.filterState = newFilterState;
-    this.search();
-  }
+  // onFilterStateChange(newFilterState: FilterState) {
+  //   this.filterState = newFilterState;
+  //   this.search();
+  // }
 
   search() {
     this.searched = true;

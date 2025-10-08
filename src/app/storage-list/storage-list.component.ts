@@ -6,15 +6,31 @@ import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
 import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.component';
+import {
+  StorageFilterComponent,
+  FilterState,
+} from '../components/storage-filter/storage-filter.component';
 
 @Component({
   selector: 'app-storage-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, FontAwesomeModule, SlotGridComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    FontAwesomeModule,
+    SlotGridComponent,
+    StorageFilterComponent,
+  ],
   template: `
     <div class="wrap">
       <div class="header">
         <h2>Storages overview</h2>
+        <app-storage-filter
+          [filterState]="filterState"
+          (filterStateChange)="onFilterStateChange($event)"
+        >
+        </app-storage-filter>
       </div>
       <div class="comparison-controls">
         <div class="comparison-mode">
@@ -36,14 +52,24 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
 
       <div class="tabs">
         @for (s of filteredStorages; track s.id) {
-        <button
-          (click)="selectStorage(s.id)"
-          [class.selected-first]="s.id === firstActiveId"
-          [class.selected-second]="s.id === secondActiveId"
-          aria-pressed="{{ s.id === firstActiveId || s.id === secondActiveId }}"
-        >
-          {{ s.name }}
-        </button>
+        <div class="storage-item">
+          <div class="storage-item-header">
+            <span>{{ s.name }}</span>
+            @if(s.frostFree){
+            <div class="frost-free-badge" [class.frost-free-badge-selected]="s.frostFree">
+              <fa-icon [icon]="faTemperatureArrowUp"></fa-icon>
+              <span class="tooltip">Frost-free</span>
+            </div>
+            }
+          </div>
+          <button
+            (click)="selectStorage(s.id)"
+            [class.selected-first]="s.id === firstActiveId"
+            [class.selected-second]="s.id === secondActiveId"
+            [attr.aria-pressed]="s.id === firstActiveId || s.id === secondActiveId"
+          ></button>
+          <span *ngIf="s.gateHeight && s.gateWidth">{{ s.gateHeight }}x{{ s.gateWidth }}</span>
+        </div>
         }
       </div>
       <div class="hint">Click a storage to view details</div>
@@ -76,7 +102,12 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
       }
       .header {
         display: flex;
-        justify-content: space-between;
+        flex-direction: column;
+      }
+
+      .storage-item {
+        display: flex;
+        flex-direction: column;
         align-items: center;
       }
       .filters-container {
@@ -87,7 +118,13 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
         align-items: center;
         gap: 0.5rem;
       }
-
+      .storage-item-header {
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-content: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
       .tabs {
         display: flex;
         gap: 0.5rem;
@@ -109,6 +146,69 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
       .tabs button.selected-second {
         background: rgb(135, 164, 199);
         color: white;
+      }
+      .storage-item-header .frost-free-badge {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        background-color: #f3f4f6;
+        border: 2px solid #d1d5db;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .storage-item-header .frost-free-badge-selected {
+        color: white;
+        background-color: orange;
+        border-color: #0b63d1;
+        border-radius: 5px;
+      }
+      .frost-free-badge:hover {
+        border-color: #9ca3af;
+      }
+      .frost-free-badge-selected {
+        background-color: orange;
+        border-color: #0b63d1;
+        color: white;
+      }
+      .frost-free-badge-selected:hover {
+        border-color: rgb(118, 131, 165);
+        transition: all 0.4s ease;
+      }
+      .tooltip {
+        visibility: hidden;
+        opacity: 0;
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #374151;
+        color: white;
+        text-align: center;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 12px;
+        white-space: nowrap;
+        z-index: 1000;
+        transition: opacity 0.3s, visibility 0.3s;
+        pointer-events: none;
+      }
+      .tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #374151 transparent transparent transparent;
+      }
+      .frost-free-badge:hover .tooltip {
+        visibility: visible;
+        opacity: 1;
       }
       .detail-overview-container {
         display: flex;
@@ -179,16 +279,28 @@ export class StorageListComponent {
   firstActiveId?: number;
   secondActiveId?: number;
 
-  filterFrostFree = false;
   comparisonMode = false;
   selectedStorages = new Set<number>();
+
+  // Filter state object
+  filterState: FilterState = {
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date().toISOString().split('T')[0],
+    minAvailableMeters: null,
+    minAvailableMetersError: '',
+    storageType: 'all',
+    cargoHeight: 0,
+    cargoWidth: 0,
+    frostFreeOnly: false,
+    mafiTrailer: false,
+  };
 
   private storageMap = new Map<number, any>();
 
   constructor(private router: Router, private storageService: StorageService) {
     this.storages = this.storageService.getAll();
-    this.filteredStorages = [...this.storages];
     this.storages.forEach((storage) => this.storageMap.set(storage.id, storage));
+    this.applyFilters(); // Apply initial filters
   }
 
   selectStorage(newId: number) {
@@ -227,9 +339,44 @@ export class StorageListComponent {
   }
 
   applyFilters() {
-    this.filteredStorages = this.storages.filter((s) =>
-      this.filterFrostFree ? s.frostFree : true
-    );
+    // Start with all storages
+    let filtered = [...this.storages];
+
+    // Filter by frost free requirement
+    if (this.filterState.frostFreeOnly) {
+      filtered = filtered.filter((storage) => !!storage.frostFree);
+    }
+
+    // Filter by storage type
+    if (this.filterState.storageType !== 'all') {
+      filtered = filtered.filter((storage) => storage.storageType === this.filterState.storageType);
+    }
+
+    // Filter by gate height and width
+    if (this.filterState.cargoHeight && this.filterState.cargoWidth) {
+      filtered = filtered.filter(
+        (storage) =>
+          storage.gateHeight >= +this.filterState.cargoHeight &&
+          storage.gateWidth >= +this.filterState.cargoWidth
+      );
+    }
+
+    // Filter by mafi trailer requirement
+    if (this.filterState.mafiTrailer) {
+      filtered = filtered.filter(
+        (storage) => storage.gateHeight - 1 >= this.filterState.cargoHeight
+      );
+    }
+
+    // Filter by minimum available meters
+    if (this.filterState.minAvailableMeters && this.filterState.minAvailableMeters > 0) {
+      filtered = filtered.filter((storage) => {
+        const availableMeters = storage.slots.length * (storage.slotVolume || 0);
+        return availableMeters >= this.filterState.minAvailableMeters!;
+      });
+    }
+
+    this.filteredStorages = filtered;
     this.firstActiveId = undefined;
     this.secondActiveId = undefined;
   }
@@ -276,5 +423,19 @@ export class StorageListComponent {
     const selectedArray = Array.from(this.selectedStorages);
     this.firstActiveId = selectedArray[0];
     this.secondActiveId = selectedArray[1];
+  }
+
+  onFilterStateChange(newFilterState: FilterState) {
+    this.filterState = newFilterState;
+    this.applyFilters();
+  }
+
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
   }
 }
