@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
-import { StorageService, StorageUnit } from '../services/storage.service';
+import { StorageService } from '../services/storage.service';
 import { StorageUtilsService } from '../services/storage-utils.service';
+import { StorageUnit } from '../shared/models';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -393,6 +394,24 @@ export class StorageListComponent implements OnInit {
       filtered = filtered.filter((storage) => !!storage.frostFree);
     }
 
+    // Filter by mafi trailer requirement
+    if (this.filterState.mafiTrailer) {
+      filtered = filtered.filter(
+        (storage) => storage.gateHeight - 1 >= this.filterState.cargoHeight
+      );
+    }
+
+    // Filter by minimum available meters (using proper availability calculation)
+    if (this.filterState.minAvailableMeters && this.filterState.minAvailableMeters > 0) {
+      filtered = filtered.filter((storage) => {
+        const availableMeters = this.getAvailableMeters(storage);
+        return availableMeters >= this.filterState.minAvailableMeters!;
+      });
+    }
+
+    // Filter out storages with no available slots for the date range
+    filtered = filtered.filter((storage) => this.getAvailableSlotCount(storage) > 0);
+
     // Filter by storage type
     if (this.filterState.storageType !== 'all') {
       filtered = filtered.filter((storage) => storage.storageType === this.filterState.storageType);
@@ -405,21 +424,6 @@ export class StorageListComponent implements OnInit {
           storage.gateHeight >= +this.filterState.cargoHeight &&
           storage.gateWidth >= +this.filterState.cargoWidth
       );
-    }
-
-    // Filter by mafi trailer requirement
-    if (this.filterState.mafiTrailer) {
-      filtered = filtered.filter(
-        (storage) => storage.gateHeight - 1 >= this.filterState.cargoHeight
-      );
-    }
-
-    // Filter by minimum available meters
-    if (this.filterState.minAvailableMeters && this.filterState.minAvailableMeters > 0) {
-      filtered = filtered.filter((storage) => {
-        const availableMeters = storage.slots.length * (storage.slotVolume || 0);
-        return availableMeters >= this.filterState.minAvailableMeters!;
-      });
     }
 
     this.filteredStorages = filtered;
@@ -489,9 +493,36 @@ export class StorageListComponent implements OnInit {
     });
   }
 
-  // Delegate methods to the utility service
+  // Date-aware availability checking methods (similar to search component)
   getAvailableSlotCount(storage: any): number {
+    // Use date-aware availability if dates are provided, otherwise use today's availability
+    if (this.filterState.startDate && this.filterState.endDate) {
+      return this.getAvailableSlotCountForDateRange(storage);
+    }
     return this.storageUtils.getAvailableSlotCount(storage);
+  }
+
+  private getAvailableSlotCountForDateRange(storage: any): number {
+    if (!storage.slots || !this.filterState.startDate || !this.filterState.endDate) return 0;
+    const start = new Date(this.filterState.startDate);
+    const end = new Date(this.filterState.endDate);
+    return storage.slots.filter((slot: any) => this.isSlotAvailableForDateRange(slot, start, end))
+      .length;
+  }
+
+  private isSlotAvailableForDateRange(slot: any, startDate: Date, endDate: Date): boolean {
+    if (!slot.bookings || slot.bookings.length === 0) return true;
+    return !slot.bookings.some((booking: any) =>
+      this.rangesOverlap(startDate, endDate, new Date(booking.startDate), new Date(booking.endDate))
+    );
+  }
+
+  private rangesOverlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date): boolean {
+    const aS = new Date(aStart.getFullYear(), aStart.getMonth(), aStart.getDate()).getTime();
+    const aE = new Date(aEnd.getFullYear(), aEnd.getMonth(), aEnd.getDate()).getTime();
+    const bS = new Date(bStart.getFullYear(), bStart.getMonth(), bStart.getDate()).getTime();
+    const bE = new Date(bEnd.getFullYear(), bEnd.getMonth(), bEnd.getDate()).getTime();
+    return aS <= bE && bS <= aE;
   }
 
   getTotalSlotCount(storageId: number): number {
@@ -500,6 +531,11 @@ export class StorageListComponent implements OnInit {
   }
 
   getAvailableMeters(storage: StorageUnit): number {
+    // Use date-aware calculation if dates are provided
+    if (this.filterState.startDate && this.filterState.endDate) {
+      const availableSlots = this.getAvailableSlotCountForDateRange(storage);
+      return availableSlots * (storage.slotVolume || 0);
+    }
     return this.storageUtils.getAvailableMeters(storage);
   }
 

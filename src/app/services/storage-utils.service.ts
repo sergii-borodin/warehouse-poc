@@ -1,47 +1,55 @@
 import { Injectable } from '@angular/core';
-import { StorageUnit, Slot, SlotBooking } from './storage.service';
+import { StorageUnit, Slot } from '../shared/models';
+import { StorageBusinessService } from './storage-business.service';
 
+/**
+ * Utility service that provides helper methods for storage operations
+ * @deprecated Most functionality has been moved to StorageBusinessService
+ * This service is kept for backward compatibility
+ */
 @Injectable({
   providedIn: 'root',
 })
 export class StorageUtilsService {
+  constructor(private storageBusinessService: StorageBusinessService) {}
+
+  /**
+   * Get available slot count for a storage
+   * @deprecated Use StorageBusinessService.getAvailableSlotCount() instead
+   */
   getAvailableSlotCount(storage: StorageUnit): number {
-    if (!storage.slots) return 0;
-    return storage.slots.filter((slot) => this.isSlotAvailable(slot)).length;
+    return this.storageBusinessService.getAvailableSlotCount(storage);
   }
 
+  /**
+   * Get total slot count for a storage
+   * @deprecated Use StorageBusinessService.getTotalSlotCount() instead
+   */
   getTotalSlotCount(storage: StorageUnit): number {
-    return storage.slots ? storage.slots.length : 0;
+    return this.storageBusinessService.getTotalSlotCount(storage);
   }
 
+  /**
+   * Get available meters for a storage
+   * @deprecated Use StorageBusinessService.getAvailableMeters() instead
+   */
   getAvailableMeters(storage: StorageUnit): number {
-    const availableSlots = this.getAvailableSlotCount(storage);
-    return availableSlots * (storage.slotVolume || 0);
+    return this.storageBusinessService.getAvailableMeters(storage);
   }
 
+  /**
+   * Get full storage capacity in meters
+   * @deprecated Use StorageBusinessService.getFullStorageCapacity() instead
+   */
   getFullStorageCapacity(storage: StorageUnit): number {
-    const totalSlots = this.getTotalSlotCount(storage);
-    return totalSlots * (storage.slotVolume || 0);
+    return this.storageBusinessService.getFullStorageCapacity(storage);
   }
 
-  private isSlotAvailable(slot: Slot): boolean {
-    if (!slot.bookings || slot.bookings.length === 0) return true;
-
-    const today = new Date();
-    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const end = start;
-
-    return !slot.bookings.some((booking) =>
-      this.rangesOverlap(start, end, new Date(booking.startDate), new Date(booking.endDate))
-    );
-  }
-
-  private rangesOverlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date): boolean {
-    const aS = new Date(aStart.getFullYear(), aStart.getMonth(), aStart.getDate()).getTime();
-    const aE = new Date(aEnd.getFullYear(), aEnd.getMonth(), aEnd.getDate()).getTime();
-    const bS = new Date(bStart.getFullYear(), bStart.getMonth(), bStart.getDate()).getTime();
-    const bE = new Date(bEnd.getFullYear(), bEnd.getMonth(), bEnd.getDate()).getTime();
-    return aS <= bE && bS <= aE;
+  /**
+   * Check if a slot is available
+   * @deprecated Use StorageBusinessService.isSlotAvailable() instead
+   */
+  isSlotAvailable(slot: Slot): boolean {
+    return this.storageBusinessService.isSlotAvailable(slot);
   }
 }
-

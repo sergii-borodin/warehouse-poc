@@ -2,7 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService, UserRole } from './services/auth.service';
+import { AuthService } from './services/auth.service';
+import { UserRole, LoginCredentials } from './shared/models';
 
 @Component({
   selector: 'app-login',
@@ -59,16 +60,24 @@ export class LoginComponent {
 
   submit() {
     this.error = false;
-    if (this.auth.login(this.username, this.password)) {
-      // Redirect based on user role
-      const userRole = this.auth.getCurrentUserRole();
-      if (userRole === UserRole.LIMITED) {
-        this.router.navigate(['/storage']);
+
+    const credentials: LoginCredentials = {
+      username: this.username,
+      password: this.password,
+    };
+
+    this.auth.login(credentials).subscribe((response) => {
+      if (response.success) {
+        // Redirect based on user role
+        const userRole = this.auth.getCurrentUserRole();
+        if (userRole === UserRole.LIMITED) {
+          this.router.navigate(['/storage']);
+        } else {
+          this.router.navigate(['/search']);
+        }
       } else {
-        this.router.navigate(['/search']);
+        this.error = true;
       }
-    } else {
-      this.error = true;
-    }
+    });
   }
 }

@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { StorageService, StorageUnit, Slot, SlotBooking } from '../services/storage.service';
+import { StorageService } from '../services/storage.service';
+import { StorageUnit, Slot, SlotBooking } from '../shared/models';
 
 interface ExpiringBooking {
   storageName: string;

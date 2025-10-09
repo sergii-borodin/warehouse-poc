@@ -5,7 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faArrowUp } from '@fortawesome/free-solid-svg-icons';
 import { StorageService } from '../services/storage.service';
-import { AuthService, User } from '../services/auth.service';
+import { AuthService } from '../services/auth.service';
+import { User } from '../shared/models';
 import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.component';
 
 @Component({
@@ -267,17 +268,23 @@ export class StorageDetailComponent implements OnInit {
 
   ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.storage = this.storageService.getById(id);
+
+    // Get storage asynchronously
+    this.storageService.getById(id).subscribe((storage) => {
+      this.storage = storage;
+      if (this.storage) {
+        this.slotHeightPercent = 100 / this.storage.slots.length;
+      }
+    });
 
     // Initialize administrator field with logged-in user
-    this.administrator = this.authService.getCurrentUser() || '';
+    const currentUser = this.authService.getCurrentUser();
+    this.administrator = currentUser ? currentUser.username : '';
 
     // Load users for responsible person dropdown
-    this.users = this.authService.getAllUsers();
-
-    if (this.storage) {
-      this.slotHeightPercent = 100 / this.storage.slots.length;
-    }
+    this.authService.getAllUsers().subscribe((users) => {
+      this.users = users;
+    });
     const qp = this.route.snapshot.queryParamMap;
     const start = qp.get('start');
     const end = qp.get('end');
@@ -340,28 +347,38 @@ export class StorageDetailComponent implements OnInit {
       !this.companyTlf
     )
       return;
-    const ok = this.storageService.addBooking(this.storage.id, this.selected()!.id, {
-      startDate: this.startDate,
-      endDate: this.endDate,
-      responsiblePerson: this.responsiblePerson,
-      companyName: this.companyName,
-      companyEmail: this.companyEmail,
-      administrator: this.administrator,
-      companyTlf: this.companyTlf,
+    const bookingRequest = {
+      storageId: this.storage.id,
+      slotId: this.selected()!.id,
+      booking: {
+        startDate: this.startDate,
+        endDate: this.endDate,
+        responsiblePerson: this.responsiblePerson,
+        companyName: this.companyName,
+        companyEmail: this.companyEmail,
+        administrator: this.administrator,
+        companyTlf: this.companyTlf,
+      },
+    };
+
+    this.storageService.addBooking(bookingRequest).subscribe((response) => {
+      if (response.success) {
+        this.confirmation.set({
+          slotName: this.selected()!.name || `Slot ${this.selected()!.id}`,
+          company: this.companyName,
+          start: this.startDate,
+          end: this.endDate,
+        });
+        this.rentFormOpen.set(false);
+        this.companyName = '';
+        this.responsiblePerson = '';
+        this.refreshAvailableSlots();
+        this.router.navigate(['/storage']);
+      } else {
+        console.error('Failed to add booking:', response.error);
+        // You might want to show an error message to the user
+      }
     });
-    if (ok) {
-      this.confirmation.set({
-        slotName: this.selected()!.name || `Slot ${this.selected()!.id}`,
-        company: this.companyName,
-        start: this.startDate,
-        end: this.endDate,
-      });
-      this.rentFormOpen.set(false);
-      this.companyName = '';
-      this.responsiblePerson = '';
-      this.refreshAvailableSlots();
-      this.router.navigate(['/storage']);
-    }
   }
 
   datesChosen(): boolean {
