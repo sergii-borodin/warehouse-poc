@@ -578,9 +578,40 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   open(id: number) {
-    this.router.navigate(['/storage', id], {
-      queryParams: { start: this.filterState.startDate, end: this.filterState.endDate },
-    });
+    const queryParams: any = {
+      start: this.filterState.startDate,
+      end: this.filterState.endDate,
+    };
+
+    // Add required slot count if minimum meters filter is set
+    if (this.filterState.minAvailableMeters && this.filterState.minAvailableMeters > 0) {
+      const storage = this.all.find((s) => s.id === id);
+      if (storage) {
+        const requiredSlots = this.getRequiredSlotCount(storage);
+        if (requiredSlots > 0) {
+          queryParams.requiredSlots = requiredSlots;
+        }
+      }
+    }
+
+    this.router.navigate(['/storage', id], { queryParams });
+  }
+
+  /**
+   * Calculate the required number of slots based on the minimum available meters filter
+   */
+  private getRequiredSlotCount(storage: StorageUnit): number {
+    if (!this.filterState.minAvailableMeters || this.filterState.minAvailableMeters <= 0) {
+      return 0;
+    }
+
+    if (!storage.slotVolume || storage.slotVolume <= 0) {
+      return 0;
+    }
+
+    const requiredSlots = Math.ceil(this.filterState.minAvailableMeters / storage.slotVolume);
+    const availableSlots = this.getAvailableSlotCount(storage);
+    return Math.min(requiredSlots, availableSlots);
   }
 
   formatDate(dateString: string): string {

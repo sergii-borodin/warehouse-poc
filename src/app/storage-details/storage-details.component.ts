@@ -22,6 +22,15 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
       <div class="content">
         <div class="overview">
           <h3>{{ storage.name }} — Slots</h3>
+          @if (requiredSlotCount > 0) {
+          <div class="slot-requirement-info">
+            <span class="info-icon">ℹ️</span>
+            <span class="info-text">
+              {{ requiredSlotCount }} slot{{ requiredSlotCount > 1 ? 's' : '' }} highlighted to meet
+              your space requirement
+            </span>
+          </div>
+          }
           <!-- <app-slot-grid [slots]="storage.slots" [showTodayAvailability]="true"></app-slot-grid> -->
           <div class="visual-area">
             <div
@@ -51,6 +60,7 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
                 [availableText]="'Available'"
                 [unavailableText]="'Not available'"
                 [selectedSlot]="selected()"
+                [autoSelectCount]="requiredSlotCount"
                 (slotClicked)="selectSlot($event)"
               ></app-slot-grid>
             </div>
@@ -58,7 +68,27 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
         </div>
 
         <div class="controls">
-          @if (selected()) {
+          @if (requiredSlotCount > 0 && getAutoSelectedSlotIds().length > 0) {
+          <div class="selected-info">
+            <h3>Selected: {{ getAutoSelectedSlotIds().join(', ') }}</h3>
+            <p>
+              {{ getAutoSelectedSlotIds().length }} slot{{
+                getAutoSelectedSlotIds().length > 1 ? 's' : ''
+              }}
+              available for chosen dates
+            </p>
+            @if (storage) {
+            <div class="requirement-details">
+              <small>
+                Based on your filter: {{ requiredSlotCount }} slot{{
+                  requiredSlotCount > 1 ? 's' : ''
+                }}
+                × {{ storage.slotVolume }}m² = {{ requiredSlotCount * storage.slotVolume }}m²
+              </small>
+            </div>
+            }
+          </div>
+          } @else if (selected()) {
           <div class="selected-info">
             <h3>Selected: {{ selected()!.name || 'Slot ' + selected()!.id }}</h3>
             <p>Selected slot is available for chosen dates</p>
@@ -235,6 +265,75 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
         top: 50%;
         transform: translateY(-50%) rotate(90deg);
       }
+
+      /* Slot requirement info */
+      .slot-requirement-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: #e3f2fd;
+        border: 1px solid #0b63d1;
+        border-radius: 6px;
+        margin: 1rem 0;
+      }
+
+      .info-icon {
+        font-size: 1.2rem;
+      }
+
+      .info-text {
+        color: #0b63d1;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      /* Requirement details in selected info */
+      .requirement-details {
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 4px;
+      }
+
+      .requirement-details small {
+        color: #6c757d;
+        font-size: 0.85rem;
+      }
+
+      .selected-info {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+      }
+
+      .selected-info h3 {
+        margin-top: 0;
+        color: #0b63d1;
+      }
+
+      .selected-info button {
+        margin-top: 1rem;
+        width: 100%;
+        padding: 0.75rem;
+        background: #0b63d1;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      .selected-info button:hover:not(:disabled) {
+        background: #094a9d;
+      }
+
+      .selected-info button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
     `,
   ],
 })
@@ -258,6 +357,7 @@ export class StorageDetailComponent implements OnInit {
   administrator = '';
   users: User[] = [];
   private availableSlotsCache: Slot[] = [];
+  requiredSlotCount = 0; // Number of slots to auto-select based on meters filter
 
   constructor(
     private router: Router,
@@ -288,10 +388,17 @@ export class StorageDetailComponent implements OnInit {
     const qp = this.route.snapshot.queryParamMap;
     const start = qp.get('start');
     const end = qp.get('end');
+    const requiredSlots = qp.get('requiredSlots');
+
     if (start && end) {
       this.startDate = start;
       this.endDate = end;
       this.refreshAvailableSlots();
+    }
+
+    // Read required slot count from query params
+    if (requiredSlots) {
+      this.requiredSlotCount = Number(requiredSlots);
     }
   }
 
@@ -301,6 +408,27 @@ export class StorageDetailComponent implements OnInit {
 
   scaleLength(length: number): number {
     return length / 2;
+  }
+
+  /**
+   * Get the IDs of all auto-selected available slots
+   */
+  getAutoSelectedSlotIds(): number[] {
+    if (!this.storage || !this.requiredSlotCount || this.requiredSlotCount === 0) {
+      return [];
+    }
+
+    const availableSlots = this.getSlotsForRendering(this.storage.slots);
+    const selectedIds: number[] = [];
+
+    for (const slot of availableSlots) {
+      if (selectedIds.length >= this.requiredSlotCount) break;
+      if (this.isAvailable(slot)) {
+        selectedIds.push(slot.id);
+      }
+    }
+
+    return selectedIds;
   }
 
   back() {

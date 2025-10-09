@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export interface Slot {
@@ -37,18 +37,18 @@ export interface Slot {
     `
       .slot-grid {
         display: grid;
-        grid-template-columns: repeat((2, 1fr));
-        /* display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px; */
 
-        /* Flip the grid direction */
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        /* grid-template-rows: repeat(2, 1fr);
+        grid-auto-flow: column; */
         gap: 1rem;
         width: 100%;
       }
-
       .slot {
         width: 10rem;
+        /* width: 3rem; */
+
         border: 1px solid #ccc;
         border-radius: 4px;
         padding: 0.5rem;
@@ -128,7 +128,7 @@ export interface Slot {
     `,
   ],
 })
-export class SlotGridComponent {
+export class SlotGridComponent implements OnInit, OnChanges {
   @Input() slots: Slot[] = [];
   @Input() clickable = false;
   @Input() showTodayAvailability = true;
@@ -136,8 +136,11 @@ export class SlotGridComponent {
   @Input() availableText = 'Available';
   @Input() unavailableText = 'Not available';
   @Input() selectedSlot?: Slot | null;
+  @Input() autoSelectCount?: number; // Number of available slots to auto-select
 
   @Output() slotClicked = new EventEmitter<Slot>();
+
+  private autoSelectedSlots = new Set<number>();
 
   onSlotClick(slot: Slot) {
     if (this.clickable && this.isSlotAvailable(slot)) {
@@ -146,7 +149,39 @@ export class SlotGridComponent {
   }
 
   isSlotSelected(slot: Slot): boolean {
-    return this.selectedSlot ? this.selectedSlot.id === slot.id : false;
+    // Check if slot is manually selected or auto-selected
+    return (
+      (this.selectedSlot ? this.selectedSlot.id === slot.id : false) ||
+      this.autoSelectedSlots.has(slot.id)
+    );
+  }
+
+  ngOnInit() {
+    // Auto-select the specified number of available slots
+    if (this.autoSelectCount && this.autoSelectCount > 0) {
+      this.autoSelectAvailableSlots(this.autoSelectCount);
+    }
+  }
+
+  ngOnChanges() {
+    // Re-calculate auto-selection when inputs change
+    if (this.autoSelectCount && this.autoSelectCount > 0) {
+      this.autoSelectAvailableSlots(this.autoSelectCount);
+    }
+  }
+
+  private autoSelectAvailableSlots(count: number) {
+    this.autoSelectedSlots.clear();
+    let selectedCount = 0;
+
+    for (const slot of this.slots) {
+      if (selectedCount >= count) break;
+
+      if (this.isSlotAvailable(slot)) {
+        this.autoSelectedSlots.add(slot.id);
+        selectedCount++;
+      }
+    }
   }
 
   getSlotName(slot: Slot): string {

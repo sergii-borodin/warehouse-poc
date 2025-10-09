@@ -82,7 +82,15 @@ import {
         </div>
         }
       </div>
-      <div class="hint">Click a storage to view details</div>
+      <div class="hint">
+        Click a storage to view details @if (filterState.minAvailableMeters &&
+        filterState.minAvailableMeters > 0) {
+        <span class="hint-highlight">
+          — Available slots matching your {{ filterState.minAvailableMeters }}m² requirement will be
+          highlighted</span
+        >
+        }
+      </div>
       <div class="detail-overview-container">
         @if (firstActiveId) {
         <div class="overview">
@@ -90,6 +98,7 @@ import {
           <app-slot-grid
             [slots]="getStorageById(firstActiveId)!.slots"
             [showTodayAvailability]="true"
+            [autoSelectCount]="getRequiredSlotCount(getStorageById(firstActiveId)!)"
           ></app-slot-grid>
         </div>
         } @if (secondActiveId){
@@ -98,6 +107,7 @@ import {
           <app-slot-grid
             [slots]="getStorageById(secondActiveId)!.slots"
             [showTodayAvailability]="true"
+            [autoSelectCount]="getRequiredSlotCount(getStorageById(secondActiveId)!)"
           ></app-slot-grid>
         </div>
         }
@@ -251,6 +261,18 @@ import {
       .overview {
         margin-top: 1rem;
         justify-items: center;
+      }
+
+      .hint {
+        text-align: center;
+        color: #6b7280;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+      }
+
+      .hint-highlight {
+        color: #0b63d1;
+        font-weight: 600;
       }
 
       /* Comparison Mode Styles */
@@ -541,5 +563,28 @@ export class StorageListComponent implements OnInit {
 
   getFullStorageCapacity(storage: StorageUnit): number {
     return this.storageUtils.getFullStorageCapacity(storage);
+  }
+
+  /**
+   * Calculate the required number of slots based on the minimum available meters filter
+   * Takes into account the slot volume of the specific storage
+   */
+  getRequiredSlotCount(storage: StorageUnit): number {
+    // Only calculate if minAvailableMeters filter is set
+    if (!this.filterState.minAvailableMeters || this.filterState.minAvailableMeters <= 0) {
+      return 0;
+    }
+
+    // If storage has no slot volume, we can't calculate
+    if (!storage.slotVolume || storage.slotVolume <= 0) {
+      return 0;
+    }
+
+    // Calculate how many slots are needed to meet the minimum meters requirement
+    const requiredSlots = Math.ceil(this.filterState.minAvailableMeters / storage.slotVolume);
+
+    // Make sure we don't request more slots than are available
+    const availableSlots = this.getAvailableSlotCount(storage);
+    return Math.min(requiredSlots, availableSlots);
   }
 }
