@@ -135,53 +135,77 @@ export class SlotGridComponent implements OnInit, OnChanges {
   @Input() customDateRange?: { start: Date; end: Date };
   @Input() availableText = 'Available';
   @Input() unavailableText = 'Not available';
-  @Input() selectedSlot?: Slot | null;
   @Input() autoSelectCount?: number; // Number of available slots to auto-select
+  @Input() selectedSlots?: Slot[]; // Array of selected slots for multi-selection
 
   @Output() slotClicked = new EventEmitter<Slot>();
+  @Output() selectedSlotsChange = new EventEmitter<Slot[]>(); // Emit when selection changes
 
-  private autoSelectedSlots = new Set<number>();
+  private hasUserInteracted = false; // Track if user has manually selected/deselected
 
   onSlotClick(slot: Slot) {
     if (this.clickable && this.isSlotAvailable(slot)) {
+      // Mark that user has manually interacted with slots
+      this.hasUserInteracted = true;
+
+      // Toggle slot selection
+      const currentSelected = this.selectedSlots || [];
+      const isAlreadySelected = currentSelected.some((s) => s.id === slot.id);
+
+      let newSelection: Slot[];
+      if (isAlreadySelected) {
+        // Deselect the slot
+        newSelection = currentSelected.filter((s) => s.id !== slot.id);
+      } else {
+        // Select the slot (add to array)
+        newSelection = [...currentSelected, slot];
+      }
+
+      // Emit the new selection
+      this.selectedSlotsChange.emit(newSelection);
+
+      // Also emit individual slot click for backward compatibility
       this.slotClicked.emit(slot);
     }
   }
 
   isSlotSelected(slot: Slot): boolean {
-    // Check if slot is manually selected or auto-selected
-    return (
-      (this.selectedSlot ? this.selectedSlot.id === slot.id : false) ||
-      this.autoSelectedSlots.has(slot.id)
-    );
+    // Check if slot is in the selectedSlots array
+    return this.selectedSlots ? this.selectedSlots.some((s) => s.id === slot.id) : false;
   }
 
   ngOnInit() {
-    // Auto-select the specified number of available slots
-    if (this.autoSelectCount && this.autoSelectCount > 0) {
-      this.autoSelectAvailableSlots(this.autoSelectCount);
+    // Auto-select the specified number of available slots only if user hasn't interacted
+    if (this.autoSelectCount && this.autoSelectCount > 0 && !this.hasUserInteracted) {
+      this.initializeAutoSelection(this.autoSelectCount);
     }
   }
 
   ngOnChanges() {
-    // Re-calculate auto-selection when inputs change
-    if (this.autoSelectCount && this.autoSelectCount > 0) {
-      this.autoSelectAvailableSlots(this.autoSelectCount);
+    // Only re-initialize auto-selection if user hasn't manually interacted
+    // This prevents re-auto-selecting when user deselects all slots
+    if (this.autoSelectCount && this.autoSelectCount > 0 && !this.hasUserInteracted) {
+      this.initializeAutoSelection(this.autoSelectCount);
     }
   }
 
-  private autoSelectAvailableSlots(count: number) {
-    this.autoSelectedSlots.clear();
-    let selectedCount = 0;
+  /**
+   * Initialize selectedSlots array with first N available slots
+   * This transforms autoSelectCount into actual selectedSlots
+   */
+  private initializeAutoSelection(count: number) {
+    const autoSelected: Slot[] = [];
 
     for (const slot of this.slots) {
-      if (selectedCount >= count) break;
+      if (autoSelected.length >= count) break;
 
       if (this.isSlotAvailable(slot)) {
-        this.autoSelectedSlots.add(slot.id);
-        selectedCount++;
+        autoSelected.push(slot);
       }
     }
+
+    // Emit the auto-selected slots back to parent component
+    this.selectedSlotsChange.emit(autoSelected);
   }
 
   getSlotName(slot: Slot): string {

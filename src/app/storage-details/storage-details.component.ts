@@ -59,44 +59,42 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
                 [customDateRange]="getDateRange()"
                 [availableText]="'Available'"
                 [unavailableText]="'Not available'"
-                [selectedSlot]="selected()"
+                [selectedSlots]="selectedSlots()"
                 [autoSelectCount]="requiredSlotCount"
                 (slotClicked)="selectSlot($event)"
+                (selectedSlotsChange)="onSelectedSlotsChange($event)"
               ></app-slot-grid>
             </div>
           </div>
         </div>
 
         <div class="controls">
-          @if (requiredSlotCount > 0 && getAutoSelectedSlotIds().length > 0) {
+          @if (selectedSlots().length > 0) {
           <div class="selected-info">
-            <h3>Selected: {{ getAutoSelectedSlotIds().join(', ') }}</h3>
+            <h3>Selected: {{ getSelectedSlotNames() }}</h3>
             <p>
-              {{ getAutoSelectedSlotIds().length }} slot{{
-                getAutoSelectedSlotIds().length > 1 ? 's' : ''
-              }}
-              available for chosen dates
+              {{ selectedSlots().length }} slot{{ selectedSlots().length > 1 ? 's' : '' }} selected
+              and available
             </p>
-            @if (storage) {
+            @if (storage && storage.slotVolume) {
             <div class="requirement-details">
               <small>
-                Based on your filter: {{ requiredSlotCount }} slot{{
-                  requiredSlotCount > 1 ? 's' : ''
+                Total area: {{ selectedSlots().length }} slot{{
+                  selectedSlots().length > 1 ? 's' : ''
                 }}
-                × {{ storage.slotVolume }}m² = {{ requiredSlotCount * storage.slotVolume }}m²
+                × {{ storage.slotVolume }}m² = {{ selectedSlots().length * storage.slotVolume }}m²
               </small>
             </div>
             }
-          </div>
-          } @else if (selected()) {
-          <div class="selected-info">
-            <h3>Selected: {{ selected()!.name || 'Slot ' + selected()!.id }}</h3>
-            <p>Selected slot is available for chosen dates</p>
-            <button [disabled]="isDisabled(selected()!)" (click)="openRentForm()">Rent area</button>
+            <button (click)="openRentForm()">
+              Rent {{ selectedSlots().length }} slot{{ selectedSlots().length > 1 ? 's' : '' }}
+            </button>
           </div>
           } @if (rentFormOpen()) {
           <div class="rent-form">
-            <h3>Rent {{ selected()!.name || 'Slot ' + selected()!.id }}</h3>
+            <h3>
+              Rent Slot{{ selectedSlots().length > 1 ? 's' : '' }}: {{ getSelectedSlotNames() }}
+            </h3>
             <label>
               Company name
               <input [(ngModel)]="companyName" placeholder="Company name" />
@@ -133,9 +131,15 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
           </div>
           } @if (confirmation()) {
           <div class="confirmation">
-            ✅ Slot {{ confirmation()!.slotName }} has been rented by "{{
+            ✅ {{ confirmation()!.totalSlots }} Slot{{
+              confirmation()!.totalSlots > 1 ? 's' : ''
+            }}
+            ({{ confirmation()!.slotIds.join(', ') }})
+            {{ confirmation()!.totalSlots > 1 ? 'have' : 'has' }} been rented by "{{
               confirmation()!.company
-            }}" <br />From: {{ confirmation()!.start }} To: {{ confirmation()!.end }}
+            }}"
+            <br />
+            From: {{ confirmation()!.start }} To: {{ confirmation()!.end }}
           </div>
           }
         </div>
@@ -342,11 +346,16 @@ export class StorageDetailComponent implements OnInit {
   storage: any;
   slotHeightPercent = 0;
 
-  selected = signal<Slot | null>(null);
+  selectedSlots = signal<Slot[]>([]); // Array of selected slots for multi-selection
   rentFormOpen = signal(false);
-  confirmation = signal<{ slotName: string; company: string; start: string; end: string } | null>(
-    null
-  );
+  confirmation = signal<{
+    slotNames: string[];
+    slotIds: number[];
+    company: string;
+    start: string;
+    end: string;
+    totalSlots: number;
+  } | null>(null);
 
   companyName = '';
   companyEmail = '';
@@ -369,11 +378,34 @@ export class StorageDetailComponent implements OnInit {
   ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
 
+    // Read query params first
+    const qp = this.route.snapshot.queryParamMap;
+    const start = qp.get('start');
+    const end = qp.get('end');
+    const requiredSlots = qp.get('requiredSlots');
+
+    if (start && end) {
+      this.startDate = start;
+      this.endDate = end;
+    }
+
+    // Read required slot count from query params
+    if (requiredSlots) {
+      this.requiredSlotCount = Number(requiredSlots);
+    }
+
     // Get storage asynchronously
     this.storageService.getById(id).subscribe((storage) => {
       this.storage = storage;
       if (this.storage) {
         this.slotHeightPercent = 100 / this.storage.slots.length;
+
+        // Refresh available slots after storage is loaded
+        if (this.startDate && this.endDate) {
+          this.refreshAvailableSlots();
+        }
+
+        // Note: Auto-selection will be handled by slot-grid component via selectedSlotsChange event
       }
     });
 
@@ -385,21 +417,6 @@ export class StorageDetailComponent implements OnInit {
     this.authService.getAllUsers().subscribe((users) => {
       this.users = users;
     });
-    const qp = this.route.snapshot.queryParamMap;
-    const start = qp.get('start');
-    const end = qp.get('end');
-    const requiredSlots = qp.get('requiredSlots');
-
-    if (start && end) {
-      this.startDate = start;
-      this.endDate = end;
-      this.refreshAvailableSlots();
-    }
-
-    // Read required slot count from query params
-    if (requiredSlots) {
-      this.requiredSlotCount = Number(requiredSlots);
-    }
   }
 
   scaleWidth(width: number): number {
@@ -408,6 +425,14 @@ export class StorageDetailComponent implements OnInit {
 
   scaleLength(length: number): number {
     return length / 2;
+  }
+
+  /**
+   * Handle selectedSlots change event from slot-grid component
+   * This receives auto-selected slots from the slot-grid
+   */
+  onSelectedSlotsChange(slots: Slot[]): void {
+    this.selectedSlots.set(slots);
   }
 
   /**
@@ -436,19 +461,38 @@ export class StorageDetailComponent implements OnInit {
   }
 
   selectSlot(slot: Slot) {
-    if (this.datesChosen() && this.isAvailable(slot)) {
-      // If clicking the same slot, deselect it
-      if (this.selected() && this.selected()!.id === slot.id) {
-        this.selected.set(null);
-        this.rentFormOpen.set(false);
-        this.confirmation.set(null);
-      } else {
-        // Select the new slot
-        this.selected.set(slot);
-        this.rentFormOpen.set(false);
-        this.confirmation.set(null);
-      }
-    }
+    // This method is now just for backward compatibility
+    // The actual selection logic is handled by slot-grid component
+    // and communicated back via onSelectedSlotsChange event
+
+    // Clear form and confirmation when selection changes
+    this.rentFormOpen.set(false);
+    this.confirmation.set(null);
+  }
+
+  /**
+   * Check if a slot is in the selected slots array
+   */
+  isSlotSelected(slotId: number): boolean {
+    return this.selectedSlots().some((s) => s.id === slotId);
+  }
+
+  /**
+   * Get comma-separated list of selected slot names/IDs
+   */
+  getSelectedSlotNames(): string {
+    return this.selectedSlots()
+      .map((slot) => slot.name || slot.id.toString())
+      .join(', ');
+  }
+
+  /**
+   * Get comma-separated list of selected slot IDs only
+   */
+  getSelectedSlotIds(): string {
+    return this.selectedSlots()
+      .map((slot) => slot.id.toString())
+      .join(', ');
   }
 
   isDisabled(slot: Slot): boolean {
@@ -466,7 +510,7 @@ export class StorageDetailComponent implements OnInit {
 
   confirmRent() {
     if (
-      !this.selected() ||
+      this.selectedSlots().length === 0 ||
       !this.companyName ||
       !this.responsiblePerson ||
       !this.companyEmail ||
@@ -475,37 +519,59 @@ export class StorageDetailComponent implements OnInit {
       !this.companyTlf
     )
       return;
-    const bookingRequest = {
-      storageId: this.storage.id,
-      slotId: this.selected()!.id,
-      booking: {
-        startDate: this.startDate,
-        endDate: this.endDate,
-        responsiblePerson: this.responsiblePerson,
-        companyName: this.companyName,
-        companyEmail: this.companyEmail,
-        administrator: this.administrator,
-        companyTlf: this.companyTlf,
-      },
-    };
 
-    this.storageService.addBooking(bookingRequest).subscribe((response) => {
-      if (response.success) {
-        this.confirmation.set({
-          slotName: this.selected()!.name || `Slot ${this.selected()!.id}`,
-          company: this.companyName,
-          start: this.startDate,
-          end: this.endDate,
-        });
-        this.rentFormOpen.set(false);
-        this.companyName = '';
-        this.responsiblePerson = '';
-        this.refreshAvailableSlots();
-        this.router.navigate(['/storage']);
-      } else {
-        console.error('Failed to add booking:', response.error);
-        // You might want to show an error message to the user
-      }
+    // Book all selected slots
+    const bookingPromises = this.selectedSlots().map((slot) => {
+      const bookingRequest = {
+        storageId: this.storage.id,
+        slotId: slot.id,
+        booking: {
+          startDate: this.startDate,
+          endDate: this.endDate,
+          responsiblePerson: this.responsiblePerson,
+          companyName: this.companyName,
+          companyEmail: this.companyEmail,
+          administrator: this.administrator,
+          companyTlf: this.companyTlf,
+        },
+      };
+      return this.storageService.addBooking(bookingRequest);
+    });
+
+    // Wait for all bookings to complete
+    let completedCount = 0;
+    const totalCount = bookingPromises.length;
+
+    bookingPromises.forEach((bookingObservable) => {
+      bookingObservable.subscribe((response) => {
+        if (response.success) {
+          completedCount++;
+
+          // When all bookings are complete, show confirmation
+          if (completedCount === totalCount) {
+            const slotNames = this.selectedSlots().map((s) => s.name || `Slot ${s.id}`);
+            const slotIds = this.selectedSlots().map((s) => s.id);
+
+            this.confirmation.set({
+              slotNames: slotNames,
+              slotIds: slotIds,
+              company: this.companyName,
+              start: this.startDate,
+              end: this.endDate,
+              totalSlots: totalCount,
+            });
+
+            this.rentFormOpen.set(false);
+            this.companyName = '';
+            this.responsiblePerson = '';
+            this.selectedSlots.set([]); // Clear selection
+            this.refreshAvailableSlots();
+            this.router.navigate(['/storage']);
+          }
+        } else {
+          console.error('Failed to add booking:', response.error);
+        }
+      });
     });
   }
 
