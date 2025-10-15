@@ -65,11 +65,15 @@ import {
               <span class="storage-text"> • Storage type: {{ filterState.storageType }}</span>
               } @if (filterState.frostFreeOnly) {
               <span class="frostFree-text"> • Frost-free only</span>
-              } @if (filterState.cargoHeight || filterState.cargoWidth) {
+              } @if ((filterState.cargoHeight && filterState.cargoHeight > 0) ||
+              (filterState.cargoWidth && filterState.cargoWidth > 0)) {
               <span class="gate-text">
-                • Cargo height: {{ filterState.cargoHeight }}m, Cargo width:
-                {{ filterState.cargoWidth }}m</span
-              >
+                @if (filterState.cargoHeight && filterState.cargoHeight > 0) { • Cargo height:
+                {{ filterState.cargoHeight }}m } @if (filterState.cargoWidth &&
+                filterState.cargoWidth > 0) { @if (filterState.cargoHeight &&
+                filterState.cargoHeight > 0) {, } @if (!(filterState.cargoHeight &&
+                filterState.cargoHeight > 0)) {• }Cargo width: {{ filterState.cargoWidth }}m }
+              </span>
               }
             </div>
           </div>
@@ -524,8 +528,8 @@ export class SearchComponent implements OnInit, OnDestroy {
     minAvailableMeters: null,
     minAvailableMetersError: '',
     storageType: 'all',
-    cargoHeight: 0,
-    cargoWidth: 0,
+    cargoHeight: null,
+    cargoWidth: null,
     frostFreeOnly: false,
     mafiTrailer: false,
   };
@@ -708,23 +712,23 @@ export class SearchComponent implements OnInit, OnDestroy {
       const gateHeightAdjustment = this.filterState.mafiTrailer ? -1 : -0.4;
 
       // Filter by cargo height if specified
-      if (this.filterState.cargoHeight > 0) {
+      if (this.filterState.cargoHeight && this.filterState.cargoHeight > 0) {
         filteredStorages = filteredStorages.filter((storage) => {
           // Skip outside storages for gate height check
           if (storage.storageType === 'outside') return true;
 
           const effectiveGateHeight = storage.gateHeight + gateHeightAdjustment;
-          return effectiveGateHeight >= +this.filterState.cargoHeight;
+          return effectiveGateHeight >= +this.filterState.cargoHeight!;
         });
       }
 
       // Filter by cargo width if specified
-      if (this.filterState.cargoWidth > 0) {
+      if (this.filterState.cargoWidth && this.filterState.cargoWidth > 0) {
         filteredStorages = filteredStorages.filter((storage) => {
           // Skip outside storages for gate width check
           if (storage.storageType === 'outside') return true;
 
-          return storage.gateWidth >= +this.filterState.cargoWidth;
+          return storage.gateWidth >= +this.filterState.cargoWidth!;
         });
       }
     }

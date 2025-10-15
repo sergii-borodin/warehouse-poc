@@ -344,8 +344,8 @@ export class StorageListComponent implements OnInit {
     minAvailableMeters: null,
     minAvailableMetersError: '',
     storageType: 'all',
-    cargoHeight: 0,
-    cargoWidth: 0,
+    cargoHeight: null,
+    cargoWidth: null,
     frostFreeOnly: false,
     mafiTrailer: false,
   };
@@ -440,23 +440,23 @@ export class StorageListComponent implements OnInit {
       const gateHeightAdjustment = this.filterState.mafiTrailer ? -1 : -0.4;
 
       // Filter by cargo height if specified
-      if (this.filterState.cargoHeight > 0) {
+      if (this.filterState.cargoHeight && this.filterState.cargoHeight > 0) {
         filtered = filtered.filter((storage) => {
           // Skip outside storages for gate height check
           if (storage.storageType === 'outside') return true;
 
           const effectiveGateHeight = storage.gateHeight + gateHeightAdjustment;
-          return effectiveGateHeight >= +this.filterState.cargoHeight;
+          return effectiveGateHeight >= +this.filterState.cargoHeight!;
         });
       }
 
       // Filter by cargo width if specified
-      if (this.filterState.cargoWidth > 0) {
+      if (this.filterState.cargoWidth && this.filterState.cargoWidth > 0) {
         filtered = filtered.filter((storage) => {
           // Skip outside storages for gate width check
           if (storage.storageType === 'outside') return true;
 
-          return storage.gateWidth >= +this.filterState.cargoWidth;
+          return storage.gateWidth >= +this.filterState.cargoWidth!;
         });
       }
     }

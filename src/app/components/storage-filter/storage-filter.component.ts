@@ -15,8 +15,8 @@ export interface FilterState {
   minAvailableMeters: number | null;
   minAvailableMetersError: string;
   storageType: string;
-  cargoHeight: number;
-  cargoWidth: number;
+  cargoHeight: number | null;
+  cargoWidth: number | null;
   frostFreeOnly: boolean;
   mafiTrailer: boolean;
 }
@@ -109,14 +109,26 @@ export interface FilterState {
           <ul class="warehouse-filters">
             <li>
               <label>
-                Cargo height
-                <input type="number" [(ngModel)]="filterState.cargoHeight" min="0" step="1" />
+                Cargo height (m)
+                <input
+                  type="number"
+                  [(ngModel)]="filterState.cargoHeight"
+                  min="0"
+                  step="0.1"
+                  placeholder="Enter height"
+                />
               </label>
             </li>
             <li>
               <label>
-                Cargo width
-                <input type="number" [(ngModel)]="filterState.cargoWidth" min="0" step="1" />
+                Cargo width (m)
+                <input
+                  type="number"
+                  [(ngModel)]="filterState.cargoWidth"
+                  min="0"
+                  step="0.1"
+                  placeholder="Enter width"
+                />
               </label>
             </li>
             <li class="slider-container gate-mode-slider-container">
