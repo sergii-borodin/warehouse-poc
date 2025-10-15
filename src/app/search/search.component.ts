@@ -464,11 +464,6 @@ export class SearchComponent implements OnInit, OnDestroy {
       this.filterState.frostFreeOnly ? !!storage.frostFree : true
     );
 
-    // Then filter by mafiTrailer requirement
-    filteredStorages = filteredStorages.filter((storage) =>
-      this.filterState.mafiTrailer ? storage.gateHeight - 1 >= this.filterState.cargoHeight : true
-    );
-
     // Filter by minimum available meters (using the new method that checks date range)
     if (this.filterState.minAvailableMeters && this.filterState.minAvailableMeters > 0) {
       filteredStorages = filteredStorages.filter((storage) => {
@@ -487,20 +482,40 @@ export class SearchComponent implements OnInit, OnDestroy {
       (storage) => this.getAvailableSlotCount(storage) > 0
     );
 
-    // Finally filter by storage type
+    // Filter by storage type
     if (this.filterState.storageType !== 'all') {
       filteredStorages = filteredStorages.filter(
         (storage) => storage.storageType === this.filterState.storageType
       );
     }
 
-    // Finally filter by gate height and width
-    if (this.filterState.cargoHeight > 0 && this.filterState.cargoWidth > 0) {
-      filteredStorages = filteredStorages.filter(
-        (storage) =>
-          storage.gateHeight >= +this.filterState.cargoHeight &&
-          storage.gateWidth >= +this.filterState.cargoWidth
-      );
+    // Filter by gate height and width with proper adjustments
+    // Only apply to warehouse type storages
+    if (this.filterState.storageType === 'warehouse' || this.filterState.storageType === 'all') {
+      // Calculate effective gate height based on mafi trailer selection
+      // Mafi trailer: -1m adjustment, Air gap (default): -0.4m adjustment
+      const gateHeightAdjustment = this.filterState.mafiTrailer ? -1 : -0.4;
+
+      // Filter by cargo height if specified
+      if (this.filterState.cargoHeight > 0) {
+        filteredStorages = filteredStorages.filter((storage) => {
+          // Skip outside storages for gate height check
+          if (storage.storageType === 'outside') return true;
+
+          const effectiveGateHeight = storage.gateHeight + gateHeightAdjustment;
+          return effectiveGateHeight >= +this.filterState.cargoHeight;
+        });
+      }
+
+      // Filter by cargo width if specified
+      if (this.filterState.cargoWidth > 0) {
+        filteredStorages = filteredStorages.filter((storage) => {
+          // Skip outside storages for gate width check
+          if (storage.storageType === 'outside') return true;
+
+          return storage.gateWidth >= +this.filterState.cargoWidth;
+        });
+      }
     }
 
     this.filteredStorages = filteredStorages;
