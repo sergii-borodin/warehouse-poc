@@ -85,12 +85,15 @@ export interface FilterState {
                 <span>All</span>
               </div>
               <div
-                class="slider-option"
+                class="slider-option warehouse-option"
                 [class.active]="filterState.storageType === 'warehouse'"
                 (click)="setStorageType('warehouse')"
               >
                 <fa-icon [icon]="faWarehouse"></fa-icon>
                 <span>Warehouse</span>
+                @if(filterState.storageType === 'warehouse') {
+                <div class="active-indicator"></div>
+                }
               </div>
               <div
                 class="slider-option"
@@ -102,65 +105,69 @@ export interface FilterState {
               </div>
             </div>
           </div>
+          @if(this.filterState.storageType === 'warehouse'){
+          <ul class="warehouse-filters">
+            <li>
+              <label>
+                Cargo height
+                <input type="number" [(ngModel)]="filterState.cargoHeight" min="0" step="1" />
+              </label>
+            </li>
+            <li>
+              <label>
+                Cargo width
+                <input type="number" [(ngModel)]="filterState.cargoWidth" min="0" step="1" />
+              </label>
+            </li>
+            <li class="slider-container gate-mode-slider-container">
+              <label class="slider-label">Gate Height Mode</label>
+              <div class="gate-mode-slider">
+                <div class="slider-track">
+                  <div
+                    class="slider-indicator"
+                    [class.position-airgap]="!filterState.mafiTrailer"
+                    [class.position-mafi]="filterState.mafiTrailer"
+                  ></div>
+                  <div
+                    class="slider-option"
+                    [class.active]="!filterState.mafiTrailer"
+                    (click)="setGateMode(false)"
+                  >
+                    <span class="gate-label">Air Gap</span>
+                    <span class="gate-value">40 cm</span>
+                  </div>
+                  <div
+                    class="slider-option"
+                    [class.active]="filterState.mafiTrailer"
+                    (click)="setGateMode(true)"
+                  >
+                    <fa-icon [icon]="faTruckRampBox"></fa-icon>
+                    <span class="gate-label">Mafi Trailer</span>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div class="frost-free-filter-container">
+                <div
+                  class="frost-free-badge"
+                  [class.frost-free-badge-selected]="filterState.frostFreeOnly"
+                  (click)="toggleFrostFree()"
+                >
+                  <fa-icon [icon]="faTemperatureArrowUp"></fa-icon>
+                  <span class="tooltip">Frost-free</span>
+                </div>
+                <input
+                  type="checkbox"
+                  [(ngModel)]="filterState.frostFreeOnly"
+                  style="display: none;"
+                />
+              </div>
+            </li>
+          </ul>
+          }
         </li>
       </ul>
-      @if(this.filterState.storageType === 'warehouse'){
-      <ul class="warehouse-filters">
-        <li>
-          <label>
-            Cargo height
-            <input type="number" [(ngModel)]="filterState.cargoHeight" min="0" step="1" />
-          </label>
-        </li>
-        <li>
-          <label>
-            Cargo width
-            <input type="number" [(ngModel)]="filterState.cargoWidth" min="0" step="1" />
-          </label>
-        </li>
-        <li class="slider-container gate-mode-slider-container">
-          <label class="slider-label">Gate Height Mode</label>
-          <div class="gate-mode-slider">
-            <div class="slider-track">
-              <div
-                class="slider-indicator"
-                [class.position-airgap]="!filterState.mafiTrailer"
-                [class.position-mafi]="filterState.mafiTrailer"
-              ></div>
-              <div
-                class="slider-option"
-                [class.active]="!filterState.mafiTrailer"
-                (click)="setGateMode(false)"
-              >
-                <span class="gate-label">Air Gap</span>
-                <span class="gate-value">40 cm</span>
-              </div>
-              <div
-                class="slider-option"
-                [class.active]="filterState.mafiTrailer"
-                (click)="setGateMode(true)"
-              >
-                <fa-icon [icon]="faTruckRampBox"></fa-icon>
-                <span class="gate-label">Mafi Trailer</span>
-              </div>
-            </div>
-          </div>
-        </li>
-        <li>
-          <div class="frost-free-filter-container">
-            <div
-              class="frost-free-badge"
-              [class.frost-free-badge-selected]="filterState.frostFreeOnly"
-              (click)="toggleFrostFree()"
-            >
-              <fa-icon [icon]="faTemperatureArrowUp"></fa-icon>
-              <span class="tooltip">Frost-free</span>
-            </div>
-            <input type="checkbox" [(ngModel)]="filterState.frostFreeOnly" style="display: none;" />
-          </div>
-        </li>
-      </ul>
-      }
       <div class="search-button-container">
         <button (click)="onSearch()" class="search-button">Search</button>
       </div>
@@ -325,18 +332,75 @@ export interface FilterState {
         left: calc(66.666% - 1px);
       }
 
+      /* Arrow indicator below warehouse option */
+      .active-indicator {
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-top: 6px solid #0b63d1;
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          bottom: -4px;
+        }
+        to {
+          opacity: 1;
+          bottom: -8px;
+        }
+      }
+
+      /* Subtle pulse effect on warehouse option when active */
+      .warehouse-option.active {
+        animation: gentlePulse 2s ease-in-out infinite;
+      }
+
+      @keyframes gentlePulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(11, 99, 209, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 0 3px rgba(11, 99, 209, 0.1);
+        }
+      }
+
       .warehouse-filters {
         display: flex;
         align-items: end;
-
-        /* display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); */
         gap: 1.5rem;
         list-style: none;
-        padding: 0;
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid #d1d5db;
+        padding: 1rem;
+        margin-top: 0.5rem;
+
+        /* Visual connection to warehouse slider */
+        background: linear-gradient(90deg, rgba(11, 99, 209, 0.05) 0%, transparent 100%);
+        border-radius: 8px;
+        position: relative;
+
+        /* Smooth slide-in animation */
+        animation: slideDown 0.5s ease-out;
+      }
+
+      /* Slide down animation */
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+          max-height: 0;
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+          max-height: 200px;
+        }
       }
 
       .frost-free-container {
