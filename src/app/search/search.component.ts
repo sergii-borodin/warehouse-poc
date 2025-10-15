@@ -351,7 +351,6 @@ import {
 
       .capacity-chart {
         display: flex;
-
         align-items: center;
         justify-content: center;
       }
@@ -540,7 +539,63 @@ export class SearchComponent implements OnInit, OnDestroy {
         display: false,
       },
       tooltip: {
-        enabled: true,
+        enabled: false,
+        external: (context) => {
+          // Tooltip Element
+          let tooltipEl = document.getElementById('chartjs-tooltip');
+
+          // Create element on first render
+          if (!tooltipEl) {
+            tooltipEl = document.createElement('div');
+            tooltipEl.id = 'chartjs-tooltip';
+            tooltipEl.style.position = 'fixed';
+            tooltipEl.style.pointerEvents = 'none';
+            tooltipEl.style.zIndex = '9999';
+            document.body.appendChild(tooltipEl);
+          }
+
+          // Hide if no tooltip
+          const tooltipModel = context.tooltip;
+          if (tooltipModel.opacity === 0) {
+            tooltipEl.style.opacity = '0';
+            return;
+          }
+
+          // Set Text
+          if (tooltipModel.body) {
+            const titleLines = tooltipModel.title || [];
+            const bodyLines = tooltipModel.body.map((b) => b.lines);
+
+            let innerHtml =
+              '<div style="background: #374151; color: white; padding: 8px 12px; border-radius: 6px; font-size: 12px; white-space: nowrap;">';
+
+            bodyLines.forEach((body, i) => {
+              const colors = tooltipModel.labelColors[i];
+              const label = tooltipModel.dataPoints[i].label || '';
+              const value = tooltipModel.dataPoints[i].parsed;
+              const total = (context.chart.data.datasets[0].data as number[]).reduce(
+                (a: number, b: number) => a + b,
+                0
+              );
+              const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+              innerHtml += `${label}: ${value} (${percentage}%)`;
+            });
+
+            innerHtml += '</div>';
+            tooltipEl.innerHTML = innerHtml;
+          }
+
+          const position = context.chart.canvas.getBoundingClientRect();
+
+          // Display, position, and set styles for font
+          tooltipEl.style.opacity = '1';
+
+          // Position tooltip to the left of the chart
+          const tooltipWidth = tooltipEl.offsetWidth;
+          tooltipEl.style.left = position.left + window.scrollX - tooltipWidth - 10 + 'px';
+          tooltipEl.style.top =
+            position.top + window.scrollY + position.height / 2 - tooltipEl.offsetHeight / 2 + 'px';
+        },
         callbacks: {
           label: function (context) {
             const label = context.label || '';
@@ -552,7 +607,7 @@ export class SearchComponent implements OnInit, OnDestroy {
         },
       },
     },
-    cutout: '50%',
+    cutout: '40%',
   };
 
   constructor(
@@ -580,6 +635,12 @@ export class SearchComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     // Clean up subscriptions
     this.subscriptions.forEach((sub) => sub.unsubscribe());
+
+    // Clean up external tooltip
+    const tooltipEl = document.getElementById('chartjs-tooltip');
+    if (tooltipEl) {
+      tooltipEl.remove();
+    }
   }
 
   onFilterStateChange(newFilterState: FilterState) {
