@@ -42,13 +42,13 @@ import {
       </section>
       @if (searched) {
       <div class="results">
-        <h3>Results</h3>
+        <h3>Available Storages</h3>
         <div class="date-range-display">
           <div class="date-info">
             <div>
               @if (filterState.startDate === filterState.endDate) {
               <span class="date-text"
-                >Showing availability for
+                >Search filter configuration:
                 <strong>{{ formatDate(filterState.startDate) }}</strong></span
               >
               } @else {
