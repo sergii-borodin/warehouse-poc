@@ -66,7 +66,7 @@ export interface FilterState {
             </div>
           </label>
         </li>
-        <li class="storage-type-slider-container">
+        <li class="slider-container storage-type-slider-container">
           <label class="slider-label">Storage type</label>
           <div class="storage-type-slider">
             <div class="slider-track">
@@ -118,6 +118,34 @@ export interface FilterState {
             <input type="number" [(ngModel)]="filterState.cargoWidth" min="0" step="1" />
           </label>
         </li>
+        <li class="slider-container gate-mode-slider-container">
+          <label class="slider-label">Gate Height Mode</label>
+          <div class="gate-mode-slider">
+            <div class="slider-track">
+              <div
+                class="slider-indicator"
+                [class.position-airgap]="!filterState.mafiTrailer"
+                [class.position-mafi]="filterState.mafiTrailer"
+              ></div>
+              <div
+                class="slider-option"
+                [class.active]="!filterState.mafiTrailer"
+                (click)="setGateMode(false)"
+              >
+                <span class="gate-label">Air Gap</span>
+                <span class="gate-value">40 cm</span>
+              </div>
+              <div
+                class="slider-option"
+                [class.active]="filterState.mafiTrailer"
+                (click)="setGateMode(true)"
+              >
+                <fa-icon [icon]="faTruckRampBox"></fa-icon>
+                <span class="gate-label">Mafi Trailer</span>
+              </div>
+            </div>
+          </div>
+        </li>
         <li>
           <div class="frost-free-filter-container">
             <div
@@ -129,19 +157,6 @@ export interface FilterState {
               <span class="tooltip">Frost-free</span>
             </div>
             <input type="checkbox" [(ngModel)]="filterState.frostFreeOnly" style="display: none;" />
-          </div>
-        </li>
-        <li>
-          <div class="mafi-trailer-filter-container">
-            <div
-              class="mafi-trailer-badge"
-              [class.mafi-trailer-badge-selected]="filterState.mafiTrailer"
-              (click)="toggleMafiTrailer()"
-            >
-              <fa-icon [icon]="faTruckRampBox"></fa-icon>
-              <span class="tooltip">Mafi Trailer</span>
-            </div>
-            <input type="checkbox" [(ngModel)]="filterState.mafiTrailer" style="display: none;" />
           </div>
         </li>
       </ul>
@@ -168,8 +183,7 @@ export interface FilterState {
       }
 
       .main-filter-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        display: flex;
         gap: 1.5rem;
         margin-bottom: 1.5rem;
         list-style: none;
@@ -182,16 +196,18 @@ export interface FilterState {
         gap: 0.5rem;
         font-weight: 500;
         color: #374151;
-        font-size: 0.875rem;
+        font-size: 1rem;
       }
 
       .filters input[type='date'],
       .filters input[type='number'],
       .filters select {
+        height: 52px;
+        width: 10rem;
         padding: 0.75rem;
         border: 2px solid #d1d5db;
         border-radius: 8px;
-        font-size: 0.875rem;
+        font-size: 1rem;
         transition: all 0.2s ease;
         background-color: white;
         color: #374151;
@@ -211,7 +227,8 @@ export interface FilterState {
         border-color: #9ca3af;
       }
 
-      .storage-type-slider-container {
+      /* Shared Slider Styles */
+      .slider-container {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
@@ -224,42 +241,25 @@ export interface FilterState {
         margin-bottom: 0;
       }
 
-      .storage-type-slider {
-        width: 100%;
-      }
-
       .slider-track {
         position: relative;
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        background: #f3f4f6;
-        border-radius: 10px;
-        padding: 4px;
-        gap: 4px;
+        background: white;
+        border: 2px solid #d1d5db;
+        border-radius: 8px;
+        padding: 3px;
+        gap: 3px;
       }
 
       .slider-indicator {
         position: absolute;
-        height: calc(100% - 8px);
-        width: calc(33.333% - 5.333px);
+        height: calc(100% - 6px);
         background: linear-gradient(135deg, #0b63d1 0%, #1d4ed8 100%);
-        border-radius: 8px;
+        border-radius: 6px;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        top: 4px;
+        top: 3px;
         box-shadow: 0 2px 8px rgba(11, 99, 209, 0.3);
         z-index: 0;
-      }
-
-      .slider-indicator.position-all {
-        left: 4px;
-      }
-
-      .slider-indicator.position-warehouse {
-        left: calc(33.333% + 1.333px);
-      }
-
-      .slider-indicator.position-outside {
-        left: calc(66.666% - 1.333px);
       }
 
       .slider-option {
@@ -267,20 +267,20 @@ export interface FilterState {
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 4px;
-        padding: 12px 8px;
+        gap: 2px;
+        padding: 6px 8px;
         cursor: pointer;
         transition: all 0.3s ease;
         position: relative;
         z-index: 1;
-        border-radius: 8px;
+        border-radius: 6px;
         color: #6b7280;
         font-size: 0.75rem;
         font-weight: 500;
       }
 
       .slider-option fa-icon {
-        font-size: 1.25rem;
+        font-size: 1.1rem;
         transition: all 0.3s ease;
       }
 
@@ -300,13 +300,38 @@ export interface FilterState {
         transform: scale(0.95);
       }
 
+      /* Storage Type Slider (3 options) */
+      .storage-type-slider-container {
+        width: 30rem;
+      }
+
+      .storage-type-slider .slider-track {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .storage-type-slider .slider-indicator {
+        width: calc(33.333% - 4px);
+      }
+
+      .storage-type-slider .slider-indicator.position-all {
+        left: 3px;
+      }
+
+      .storage-type-slider .slider-indicator.position-warehouse {
+        left: calc(33.333% + 1px);
+      }
+
+      .storage-type-slider .slider-indicator.position-outside {
+        left: calc(66.666% - 1px);
+      }
+
       .warehouse-filters {
         display: flex;
         align-items: end;
 
         /* display: grid;
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); */
-        gap: 1rem;
+        gap: 1.5rem;
         list-style: none;
         padding: 0;
         margin-top: 1rem;
@@ -325,8 +350,8 @@ export interface FilterState {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 40px;
-        height: 40px;
+        width: 52px;
+        height: 52px;
         background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
         border: 2px solid #d1d5db;
         border-radius: 12px;
@@ -396,47 +421,47 @@ export interface FilterState {
         transform: translateX(-50%) translateY(-4px);
       }
 
-      .mafi-trailer-badge {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-        border: 2px solid #d1d5db;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        color: #6b7280;
-        position: relative;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      /* Gate Mode Slider (2 options) */
+      .gate-mode-slider-container {
       }
 
-      .mafi-trailer-badge:hover {
-        background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
-        border-color: #9ca3af;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      .gate-mode-slider {
+        width: 15rem;
       }
 
-      .mafi-trailer-badge-selected {
-        background: linear-gradient(135deg, #0b63d1 0%, #1d4ed8 100%);
-        border-color: #0b63d1;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(11, 99, 209, 0.4);
+      .gate-mode-slider .slider-track {
+        grid-template-columns: repeat(2, 1fr);
       }
 
-      .mafi-trailer-badge-selected:hover {
-        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-        border-color: #0b63d1;
-        box-shadow: 0 6px 16px rgba(11, 99, 209, 0.5);
+      .gate-mode-slider .slider-indicator {
+        width: calc(50% - 4.5px);
       }
 
-      .mafi-trailer-badge:hover .tooltip {
-        visibility: visible;
-        opacity: 1;
-        transform: translateX(-50%) translateY(-4px);
+      .gate-mode-slider .slider-indicator.position-airgap {
+        left: 3px;
+      }
+
+      .gate-mode-slider .slider-indicator.position-mafi {
+        left: calc(50% + 1.5px);
+      }
+
+      .gate-mode-slider .slider-option {
+        gap: 1px;
+        padding: 6px 12px;
+      }
+
+      .gate-mode-slider .slider-option fa-icon {
+        font-size: 1rem;
+        margin-bottom: 1px;
+      }
+
+      .gate-label {
+        font-weight: 600;
+      }
+
+      .gate-value {
+        font-size: 0.7rem;
+        font-weight: 400;
       }
 
       .error {
@@ -526,11 +551,15 @@ export interface FilterState {
 
         .slider-option {
           font-size: 0.7rem;
-          padding: 10px 6px;
+          padding: 5px 6px;
         }
 
         .slider-option fa-icon {
-          font-size: 1.1rem;
+          font-size: 1rem;
+        }
+
+        .gate-mode-slider .slider-option {
+          padding: 5px 10px;
         }
       }
 
@@ -540,20 +569,23 @@ export interface FilterState {
           border-radius: 8px;
         }
 
-        .frost-free-badge,
-        .mafi-trailer-badge {
+        .frost-free-badge {
           width: 44px;
           height: 44px;
         }
 
         .slider-option {
           font-size: 0.65rem;
-          padding: 8px 4px;
-          gap: 2px;
+          padding: 5px 4px;
+          gap: 1px;
         }
 
         .slider-option fa-icon {
-          font-size: 1rem;
+          font-size: 0.95rem;
+        }
+
+        .gate-mode-slider .slider-option {
+          padding: 5px 8px;
         }
       }
     `,
@@ -603,8 +635,8 @@ export class StorageFilterComponent {
     this.emitFilterState();
   }
 
-  toggleMafiTrailer() {
-    this.filterState.mafiTrailer = !this.filterState.mafiTrailer;
+  setGateMode(isMafiTrailer: boolean) {
+    this.filterState.mafiTrailer = isMafiTrailer;
     this.emitFilterState();
   }
 
