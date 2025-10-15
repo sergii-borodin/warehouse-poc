@@ -77,17 +77,16 @@ import {
 
         <div class="hint" *ngIf="!filteredStorages.length">No warehouses match your criteria.</div>
         <div class="cards">
-          <div class="card" *ngFor="let storage of filteredStorages">
+          <div class="card" *ngFor="let storage of filteredStorages" (click)="open(storage.id)">
             <div class="card-head">
               <div class="card-head-left">
-                <div class="title">{{ storage.name }}</div>
+                <h3 class="title">{{ storage.name }}</h3>
                 @if(storage.frostFree){
                 <div class="frost-free-badge">
                   <fa-icon [icon]="faTemperatureArrowUp"></fa-icon>
                   <span class="tooltip">Frost-free</span>
                 </div>
                 }
-                <!-- <div class="badge" *ngIf="storage.frostFree">Frost-free</div> -->
               </div>
 
               <div class="card-head-right">
@@ -97,21 +96,32 @@ import {
                     [data]="getCapacityChartData(storage)"
                     [options]="capacityChartOptions"
                     [type]="'doughnut'"
-                    width="20"
-                    height="20"
+                    width="30"
+                    height="30"
                   >
                   </canvas>
                 </div>
               </div>
             </div>
-            <div class="slots">
-              {{ getAvailableSlotCount(storage) }}/{{ getTotalSlotCount(storage.id) }} available
-              slot(s)
+
+            <div class="card-stats">
+              <div class="stat-item">
+                <span class="stat-label">Available Slots</span>
+                <span class="stat-value"
+                  >{{ getAvailableSlotCount(storage) }}/{{ getTotalSlotCount(storage.id) }}</span
+                >
+              </div>
+              <div class="stat-item" *ngIf="storage.slotVolume">
+                <span class="stat-label">Available Space</span>
+                <span class="stat-value"
+                  >{{ getAvailableMeters(storage) }}/{{ getFullStorageCapacity(storage) }}m²</span
+                >
+              </div>
             </div>
-            <div class="meters" *ngIf="storage.slotVolume">
-              {{ getAvailableMeters(storage) }}/{{ getFullStorageCapacity(storage) }}m² available
+
+            <div class="card-footer">
+              <span class="view-link">View Details →</span>
             </div>
-            <button (click)="open(storage.id)">View slots</button>
           </div>
         </div>
       </div>
@@ -210,9 +220,9 @@ import {
         visibility: hidden;
         opacity: 0;
         position: absolute;
-        bottom: 125%;
-        left: 50%;
-        transform: translateX(-50%);
+        top: 50%;
+        left: calc(100% + 8px);
+        transform: translateY(-50%);
         background-color: #374151;
         color: white;
         text-align: center;
@@ -227,12 +237,12 @@ import {
       .tooltip::after {
         content: '';
         position: absolute;
-        top: 100%;
-        left: 50%;
-        margin-left: -5px;
+        right: 100%;
+        top: 50%;
+        margin-top: -5px;
         border-width: 5px;
         border-style: solid;
-        border-color: #374151 transparent transparent transparent;
+        border-color: transparent #374151 transparent transparent;
       }
       .frost-free-badge:hover .tooltip {
         visibility: visible;
@@ -246,61 +256,154 @@ import {
       } */
       .cards {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
       }
+
       .card {
+        background: white;
         border: 1px solid #e2e8f0;
-        border-radius: 6px;
-        padding: 0.75rem;
+        border-radius: 12px;
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        position: relative;
+        overflow: hidden;
       }
+
+      .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #0b63d1 0%, #1d4ed8 100%);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+        border-radius: 12px 12px 0 0;
+      }
+
+      .card:hover {
+        border-color: #0b63d1;
+        box-shadow: 0 10px 25px -5px rgba(11, 99, 209, 0.2), 0 8px 10px -6px rgba(11, 99, 209, 0.1);
+        transform: translateY(-4px);
+      }
+
+      .card:hover::before {
+        transform: scaleX(1);
+      }
+
+      .card:active {
+        transform: translateY(-2px);
+      }
+
       .card-head {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.5rem;
+        align-items: flex-start;
+        margin-bottom: 1.25rem;
       }
+
       .card-head-left {
         display: flex;
-        gap: 0.5rem;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.75rem;
         flex: 1;
       }
-      .card-head-left .frost-free-badge {
-        border: 1px solid rgb(88, 122, 180);
-        border-radius: 5px;
-        background-color: orange;
-        color: white;
+
+      .title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+        line-height: 1.3;
       }
+
+      .card-head-left .frost-free-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        font-size: 1rem;
+        position: relative;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+      }
+
+      .card-head-left .frost-free-badge:hover {
+        box-shadow: 0 4px 8px rgba(245, 158, 11, 0.4);
+      }
+
       .card-head-right {
         display: flex;
         align-items: center;
         gap: 0.5rem;
       }
-      /* .frost-free-filter-badge {
-        display: flex;
-        position: absolute;
-        justify-content: center;
-        align-items: center;
-        width: 10px;
-        height: 10px;
-        border: 1px solid rgb(88, 122, 180);
-        border-radius: 50%;
-      } */
-      /* .badge {
-        width: 5rem;
-        background: #0b63d1;
-        color: white;
-        border-radius: 4px;
-        padding: 0.1rem 0.4rem;
-        font-size: 0.75rem;
-      } */
+
       .capacity-chart {
-        width: 30px;
-        height: 30px;
         display: flex;
+
         align-items: center;
         justify-content: center;
       }
+
+      .card-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 8px;
+      }
+
+      .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .stat-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+        font-weight: 500;
+      }
+
+      .stat-value {
+        font-size: 0.875rem;
+        color: #1f2937;
+        font-weight: 700;
+      }
+
+      .card-footer {
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      .view-link {
+        color: #0b63d1;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-block;
+      }
+
+      .card:hover .view-link {
+        color: #1d4ed8;
+        transform: translateX(4px) scale(1.05);
+      }
+
       .capacity {
         color: #6b7280;
         font-size: 0.875rem;
@@ -337,11 +440,6 @@ import {
         color: #10b981;
         font-weight: 500;
       }
-      .meters {
-        color: #6b7280;
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
-      }
       .error {
         border-color: #dc2626 !important;
       }
@@ -352,6 +450,58 @@ import {
       }
       .overview-section {
         padding: 20px 10px;
+      }
+
+      /* Responsive card styles */
+      @media (max-width: 768px) {
+        .cards {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+
+        .card {
+          padding: 1.25rem;
+        }
+
+        .title {
+          font-size: 1.125rem;
+        }
+
+        .capacity-chart {
+          width: 40px;
+          height: 40px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .card {
+          padding: 1rem;
+        }
+
+        .card-head {
+          margin-bottom: 1rem;
+        }
+
+        .title {
+          font-size: 1rem;
+        }
+
+        .card-head-left .frost-free-badge {
+          width: 28px;
+          height: 28px;
+          min-width: 28px;
+          font-size: 0.875rem;
+        }
+
+        .card-stats {
+          padding: 0.75rem;
+          gap: 0.5rem;
+        }
+
+        .stat-label,
+        .stat-value {
+          font-size: 0.8125rem;
+        }
       }
     `,
   ],
@@ -402,7 +552,7 @@ export class SearchComponent implements OnInit, OnDestroy {
         },
       },
     },
-    cutout: '60%',
+    cutout: '50%',
   };
 
   constructor(
