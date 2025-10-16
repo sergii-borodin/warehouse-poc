@@ -37,11 +37,8 @@ export interface Slot {
     `
       .slot-grid {
         display: grid;
-
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        /* grid-template-rows: repeat(2, 1fr);
-        grid-auto-flow: column; */
+        padding: 1rem;
         gap: 1rem;
         width: 100%;
       }

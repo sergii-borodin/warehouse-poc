@@ -149,56 +149,194 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
   `,
   styles: [
     `
+      * {
+        box-sizing: border-box;
+      }
+
       .page {
         padding: 1rem;
+        max-width: 100%;
+        overflow-x: hidden;
+        min-height: 100vh;
+        box-sizing: border-box;
       }
       .back {
         margin-bottom: 1rem;
+        padding: 0.75rem 1.5rem;
+        background: white;
+        color: #0b63d1;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      }
+      .back:hover {
+        border-color: #0b63d1;
+        box-shadow: 0 10px 25px -5px rgba(11, 99, 209, 0.2), 0 8px 10px -6px rgba(11, 99, 209, 0.1);
+        transform: translateY(-2px);
       }
       .content {
         display: flex;
-        flex-direction: column;
-        align-items: center;
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-around;
         gap: 2rem;
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+
+      @media (max-width: 1200px) {
+        .content {
+          flex-direction: column;
+          align-items: center;
+        }
       }
       .storage-rect {
         gap: 1rem;
-        padding: 2rem;
-        border: 2px solid #333;
+        padding: 1.5rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
         position: relative;
+        background: white;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        max-width: 100%;
+      }
+      .rent-form {
+        background: white;
+        padding: 1.25rem;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        width: 100%;
+      }
+      .rent-form h3 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        color: #1f2937;
+        font-size: 1.125rem;
       }
       .rent-form label {
         display: block;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.875rem;
+        color: #374151;
+        font-weight: 500;
+        font-size: 0.875rem;
       }
       .rent-form input,
       .rent-form select {
         width: 100%;
-        padding: 0.5rem;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 1rem;
+        padding: 0.625rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.875rem;
         margin-top: 0.25rem;
+        transition: all 0.2s ease;
+      }
+      .rent-form input:focus,
+      .rent-form select:focus {
+        outline: none;
+        border-color: #0b63d1;
+        box-shadow: 0 0 0 3px rgba(11, 99, 209, 0.1);
       }
       .rent-form input[readonly] {
-        background-color: #f8f9fa;
-        color: #6c757d;
+        background-color: #f8fafc;
+        color: #6b7280;
+      }
+      .dates {
+        margin: 0.75rem 0;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 8px;
+        font-size: 0.875rem;
+        color: #374151;
+        line-height: 1.5;
+      }
+      .dates div {
+        margin: 0.125rem 0;
       }
       .form-actions {
-        margin-top: 1rem;
+        margin-top: 1.25rem;
         display: flex;
-        gap: 0.5rem;
+        gap: 0.75rem;
+      }
+      .form-actions button {
+        flex: 1;
+        padding: 0.625rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .form-actions button:first-child {
+        background: linear-gradient(135deg, #0b63d1 0%, #1d4ed8 100%);
+        color: white;
+        box-shadow: 0 2px 4px rgba(11, 99, 209, 0.3);
+      }
+      .form-actions button:first-child:hover {
+        box-shadow: 0 10px 25px -5px rgba(11, 99, 209, 0.4), 0 8px 10px -6px rgba(11, 99, 209, 0.2);
+        transform: translateY(-2px);
+      }
+      .form-actions button:last-child {
+        background: white;
+        color: #6b7280;
+        border: 1px solid #e2e8f0;
+      }
+      .form-actions button:last-child:hover {
+        border-color: #d1d5db;
+        background: #f8fafc;
       }
       .confirmation {
-        background: #e6ffed;
-        border: 1px solid #28a745;
-        padding: 0.5rem;
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        border: 2px solid #10b981;
+        padding: 1.25rem;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        color: #065f46;
+        box-shadow: 0 1px 3px 0 rgba(16, 185, 129, 0.2);
+        width: 100%;
+        line-height: 1.6;
       }
       .overview {
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin-top: 1rem;
+        /* flex: 1 1 auto; */
+        min-width: 0;
+      }
+      .overview h3 {
+        color: #1f2937;
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        margin-top: 0;
+      }
+      .visual-area {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+      .controls {
+        flex: 0 0 auto;
+        width: 400px;
+        min-width: 350px;
+        max-width: 450px;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+      }
+
+      @media (max-width: 1200px) {
+        .controls {
+          width: 100%;
+          max-width: 500px;
+        }
       }
       .slots-grid {
         width: 21rem;
@@ -208,40 +346,44 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
       }
       .slot {
         width: 10rem;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
         padding: 0.5rem;
-        background: #fff;
+        background: white;
         text-align: center;
+        transition: all 0.2s ease;
       }
       .slot.available {
-        background: #d4edda;
-        border-color: #155724;
-        color: #155724;
+        background: #d1fae5;
+        border-color: #10b981;
+        color: #065f46;
       }
       .slot.unavailable {
-        background: #f8d7da;
-        border-color: #721c24;
-        color: #721c24;
+        background: #fee2e2;
+        border-color: #ef4444;
+        color: #991b1b;
       }
 
       /* Gate styles */
       .gate {
         position: absolute;
         line-height: 0.4;
-        background-color: lightgrey;
-        border: 2px solid #lightgrey;
+        background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%);
+        border: 2px solid #6b7280;
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 10;
-        /* border-radius: 4px; */
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
 
       .gate-label {
-        color: black;
+        color: #1f2937;
         font-weight: bold;
         font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
       /* Gate positioning */
@@ -274,69 +416,92 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
       .slot-requirement-info {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1rem;
-        background: #e3f2fd;
-        border: 1px solid #0b63d1;
-        border-radius: 6px;
-        margin: 1rem 0;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: white;
+        border: 2px solid #0b63d1;
+        border-radius: 12px;
+        margin: 0.5rem 0 1rem 0;
+        box-shadow: 0 1px 3px 0 rgba(11, 99, 209, 0.1);
+        max-width: 100%;
       }
 
       .info-icon {
-        font-size: 1.2rem;
+        font-size: 1.5rem;
       }
 
       .info-text {
         color: #0b63d1;
         font-weight: 600;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        flex: 1;
       }
 
       /* Requirement details in selected info */
       .requirement-details {
-        margin-top: 0.5rem;
-        padding: 0.5rem;
-        background: #f8f9fa;
-        border-radius: 4px;
+        margin-top: 0.625rem;
+        padding: 0.625rem 0.75rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
       }
 
       .requirement-details small {
-        color: #6c757d;
-        font-size: 0.85rem;
+        color: #6b7280;
+        font-size: 0.8125rem;
+        line-height: 1.5;
       }
 
       .selected-info {
-        background: #fff;
-        padding: 1.5rem;
-        border-radius: 8px;
-        border: 1px solid #e9ecef;
+        background: white;
+        padding: 1.25rem;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        width: 100%;
       }
 
       .selected-info h3 {
         margin-top: 0;
         color: #0b63d1;
+        font-size: 1.125rem;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+      }
+
+      .selected-info p {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin: 0.375rem 0;
+        line-height: 1.5;
       }
 
       .selected-info button {
-        margin-top: 1rem;
+        margin-top: 0.875rem;
         width: 100%;
         padding: 0.75rem;
-        background: #0b63d1;
+        background: linear-gradient(135deg, #0b63d1 0%, #1d4ed8 100%);
         color: white;
         border: none;
-        border-radius: 6px;
+        border-radius: 8px;
         cursor: pointer;
-        font-size: 1rem;
+        font-size: 0.95rem;
         font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 4px rgba(11, 99, 209, 0.3);
       }
 
       .selected-info button:hover:not(:disabled) {
-        background: #094a9d;
+        box-shadow: 0 10px 25px -5px rgba(11, 99, 209, 0.4), 0 8px 10px -6px rgba(11, 99, 209, 0.2);
+        transform: translateY(-2px);
       }
 
       .selected-info button:disabled {
-        background: #ccc;
+        background: #d1d5db;
         cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
       }
     `,
   ],
