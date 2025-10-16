@@ -15,13 +15,25 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
   imports: [CommonModule, FormsModule, FontAwesomeModule, SlotGridComponent],
   template: `
     <div class="page">
-      <button class="back" (click)="back()">← Back</button>
+      <button class="back" (click)="back()">← Back to Search</button>
 
       @if (storage) {
 
+      <header class="page-header">
+        <h1>{{ storage.name }}</h1>
+        <p class="storage-details-meta">
+          Storage Type: <span class="highlight">{{ storage.storageType }}</span> @if
+          (storage.gateHeight && storage.gateWidth) { • Gate:
+          <span class="highlight">{{ storage.gateHeight }}m × {{ storage.gateWidth }}m</span> } @if
+          (storage.slotVolume) { • Slot Volume:
+          <span class="highlight">{{ storage.slotVolume }}m²</span>
+          }
+        </p>
+      </header>
+
       <div class="content">
-        <div class="overview">
-          <h3>{{ storage.name }} — Slots</h3>
+        <section class="overview">
+          <h2 class="section-title">Storage Layout</h2>
           @if (requiredSlotCount > 0) {
           <div class="slot-requirement-info">
             <span class="info-icon">ℹ️</span>
@@ -31,7 +43,6 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
             </span>
           </div>
           }
-          <!-- <app-slot-grid [slots]="storage.slots" [showTodayAvailability]="true"></app-slot-grid> -->
           <div class="visual-area">
             <div
               class="storage-rect"
@@ -66,13 +77,15 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
               ></app-slot-grid>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div class="controls">
+        <section class="controls">
+          <h2 class="section-title">Booking Details</h2>
           @if (selectedSlots().length > 0) {
           <div class="selected-info">
-            <h3>Selected: {{ getSelectedSlotNames() }}</h3>
-            <p>
+            <h3>Selected Slots</h3>
+            <p class="slot-names">{{ getSelectedSlotNames() }}</p>
+            <p class="slot-count">
               {{ selectedSlots().length }} slot{{ selectedSlots().length > 1 ? 's' : '' }} selected
               and available
             </p>
@@ -120,9 +133,12 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
               Administrator
               <input [(ngModel)]="administrator" readonly />
             </label>
-            <div class="dates">
-              <div>From: {{ startDate }}</div>
-              <div>To: {{ endDate }}</div>
+            <div class="dates-section">
+              <label class="dates-label">Booking Period</label>
+              <div class="dates">
+                <div>From: {{ startDate }}</div>
+                <div>To: {{ endDate }}</div>
+              </div>
             </div>
             <div class="form-actions">
               <button (click)="confirmRent()">Confirm</button>
@@ -131,18 +147,27 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
           </div>
           } @if (confirmation()) {
           <div class="confirmation">
-            ✅ {{ confirmation()!.totalSlots }} Slot{{
-              confirmation()!.totalSlots > 1 ? 's' : ''
-            }}
-            ({{ confirmation()!.slotIds.join(', ') }})
-            {{ confirmation()!.totalSlots > 1 ? 'have' : 'has' }} been rented by "{{
-              confirmation()!.company
-            }}"
-            <br />
-            From: {{ confirmation()!.start }} To: {{ confirmation()!.end }}
+            <strong>Booking Confirmed!</strong>
+            <p>
+              ✅ {{ confirmation()!.totalSlots }} Slot{{
+                confirmation()!.totalSlots > 1 ? 's' : ''
+              }}
+              ({{ confirmation()!.slotIds.join(', ') }})
+              {{ confirmation()!.totalSlots > 1 ? 'have' : 'has' }} been rented by "{{
+                confirmation()!.company
+              }}"
+            </p>
+            <p class="confirmation-dates">
+              From: <strong>{{ confirmation()!.start }}</strong> To:
+              <strong>{{ confirmation()!.end }}</strong>
+            </p>
+          </div>
+          } @if (selectedSlots().length === 0 && !rentFormOpen() && !confirmation()) {
+          <div class="empty-state">
+            <p>👆 Select slots from the storage layout above to start booking</p>
           </div>
           }
-        </div>
+        </section>
       </div>
       }
     </div>
@@ -178,6 +203,44 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
         box-shadow: 0 10px 25px -5px rgba(11, 99, 209, 0.2), 0 8px 10px -6px rgba(11, 99, 209, 0.1);
         transform: translateY(-2px);
       }
+
+      .page-header {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      }
+
+      .page-header h1 {
+        margin: 0 0 0.5rem 0;
+        color: #1f2937;
+        font-size: 1.75rem;
+        font-weight: 700;
+      }
+
+      .storage-details-meta {
+        margin: 0;
+        color: #6b7280;
+        font-size: 0.9rem;
+        line-height: 1.6;
+      }
+
+      .storage-details-meta .highlight {
+        color: #0b63d1;
+        font-weight: 600;
+      }
+
+      .section-title {
+        margin: 0 0 1rem 0;
+        color: #1f2937;
+        font-size: 1.125rem;
+        font-weight: 700;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e2e8f0;
+      }
+
       .content {
         display: flex;
         flex-direction: row;
@@ -214,9 +277,12 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
       }
       .rent-form h3 {
         margin-top: 0;
-        margin-bottom: 1rem;
+        margin-bottom: 1.25rem;
         color: #1f2937;
-        font-size: 1.125rem;
+        font-size: 1rem;
+        font-weight: 700;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e2e8f0;
       }
       .rent-form label {
         display: block;
@@ -245,17 +311,35 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
         background-color: #f8fafc;
         color: #6b7280;
       }
+      .dates-section {
+        margin-bottom: 0.875rem;
+      }
+      .dates-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #374151;
+        font-weight: 500;
+        font-size: 0.875rem;
+      }
       .dates {
-        margin: 0.75rem 0;
-        padding: 0.75rem;
+        margin: 0;
+        padding: 0.875rem;
         background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
         border-radius: 8px;
         font-size: 0.875rem;
         color: #374151;
         line-height: 1.5;
+        border: 1px solid #e2e8f0;
       }
       .dates div {
-        margin: 0.125rem 0;
+        margin: 0.25rem 0;
+        font-weight: 500;
+      }
+      .dates div:first-child {
+        margin-top: 0;
+      }
+      .dates div:last-child {
+        margin-bottom: 0;
       }
       .form-actions {
         margin-top: 1.25rem;
@@ -301,19 +385,51 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
         width: 100%;
         line-height: 1.6;
       }
+
+      .confirmation strong {
+        display: block;
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+        color: #047857;
+      }
+
+      .confirmation p {
+        margin: 0.5rem 0;
+      }
+
+      .confirmation-dates {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #10b981;
+        font-size: 0.8125rem;
+      }
+
+      .confirmation-dates strong {
+        display: inline;
+        font-size: inherit;
+        margin: 0;
+      }
+
+      .empty-state {
+        padding: 2rem 1.5rem;
+        text-align: center;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border: 2px dashed #d1d5db;
+        border-radius: 12px;
+        color: #6b7280;
+      }
+
+      .empty-state p {
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.6;
+      }
       .overview {
         display: flex;
         flex-direction: column;
         align-items: center;
-        /* flex: 1 1 auto; */
+        flex: 1 1 auto;
         min-width: 0;
-      }
-      .overview h3 {
-        color: #1f2937;
-        font-size: 1.25rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        margin-top: 0;
       }
       .visual-area {
         width: 100%;
@@ -330,9 +446,22 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
         flex-direction: column;
         align-items: stretch;
         gap: 1rem;
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      }
+
+      .controls .section-title {
+        margin-bottom: 1.25rem;
       }
 
       @media (max-width: 1200px) {
+        .page-header h1 {
+          font-size: 1.5rem;
+        }
+
         .controls {
           width: 100%;
           max-width: 500px;
@@ -465,15 +594,24 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
       .selected-info h3 {
         margin-top: 0;
         color: #0b63d1;
-        font-size: 1.125rem;
-        margin-bottom: 0.5rem;
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
         line-height: 1.4;
+        font-weight: 700;
       }
 
-      .selected-info p {
+      .selected-info .slot-names {
+        color: #1f2937;
+        font-size: 0.95rem;
+        margin: 0 0 0.5rem 0;
+        font-weight: 600;
+        line-height: 1.5;
+      }
+
+      .selected-info .slot-count {
         color: #6b7280;
         font-size: 0.875rem;
-        margin: 0.375rem 0;
+        margin: 0 0 0.5rem 0;
         line-height: 1.5;
       }
 
