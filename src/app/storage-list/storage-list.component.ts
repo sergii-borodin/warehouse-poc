@@ -116,10 +116,16 @@ import {
   `,
   styles: [
     `
+      * {
+        box-sizing: border-box;
+      }
+
       .wrap {
         padding: 1rem;
         font-family: Arial, sans-serif;
         transition: opacity 0.3s ease;
+        max-width: 100%;
+        overflow-x: hidden;
       }
 
       .wrap.hidden {
@@ -129,12 +135,20 @@ import {
       .header {
         display: flex;
         flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 6px;
       }
 
       .storage-item {
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: stretch;
+        flex: 1 1 0;
+        min-width: 0;
+        max-width: 150px;
+        box-sizing: border-box;
+        overflow: hidden;
       }
       .filters-container {
         p {
@@ -145,25 +159,64 @@ import {
         gap: 0.5rem;
       }
       .storage-item-header {
+        height: 2rem;
         margin-bottom: 0.5rem;
         display: flex;
-        align-content: center;
+        align-items: center;
         justify-content: center;
-        gap: 0.5rem;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+        font-weight: 600;
+        font-size: 0.75rem;
+        color: #1f2937;
+        text-align: center;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        width: 100%;
+      }
+      .storage-item-header span {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+      .storage-item > span {
+        font-size: 0.65rem;
+        color: #6b7280;
+        width: 100%;
+        text-align: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
       .tabs {
         display: flex;
         gap: 0.5rem;
         margin: 1rem 0;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-x: hidden;
+        justify-content: flex-start;
+        width: 100%;
       }
       .tabs button {
         position: relative;
-        width: 5rem;
+        width: 100%;
         height: 8rem;
-        border-radius: 6px;
-        border: 1px solid rgb(88, 122, 180);
-        background: #eaf4ff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        background: white;
         cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        padding: 0.5rem 0.25rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .tabs button:hover {
+        border-color: #0b63d1;
+        box-shadow: 0 10px 25px -5px rgba(11, 99, 209, 0.2), 0 8px 10px -6px rgba(11, 99, 209, 0.1);
+        transform: translateY(-4px);
       }
       .tabs button.selected-first {
         background: #0b63d1;
@@ -180,28 +233,31 @@ import {
         justify-content: center;
         width: 20px;
         height: 20px;
-        background-color: #f3f4f6;
-        border: 2px solid #d1d5db;
-        border-radius: 8px;
+        min-width: 20px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
         cursor: pointer;
         transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+      }
+      .storage-item-header .frost-free-badge:hover {
+        box-shadow: 0 4px 8px rgba(245, 158, 11, 0.4);
       }
       .storage-item-header .frost-free-badge-selected {
         color: white;
-        background-color: orange;
-        border-color: #0b63d1;
-        border-radius: 5px;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       }
       .frost-free-badge:hover {
-        border-color: #9ca3af;
+        box-shadow: 0 4px 8px rgba(245, 158, 11, 0.4);
       }
       .frost-free-badge-selected {
-        background-color: orange;
-        border-color: #0b63d1;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         color: white;
       }
       .frost-free-badge-selected:hover {
-        border-color: rgb(118, 131, 165);
+        box-shadow: 0 4px 8px rgba(245, 158, 11, 0.4);
         transition: all 0.4s ease;
       }
       .tooltip {
@@ -239,19 +295,31 @@ import {
 
       .slots,
       .meters {
-        font-size: 0.8rem;
-        color: #6b7280;
-        margin: 0.25rem 0;
+        font-size: 0.7rem;
+        color: #374151;
+        margin: 0.2rem 0;
         text-align: center;
+        padding: 0.2rem 0.1rem;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        line-height: 1.2;
+        width: 100%;
       }
 
       .slots {
-        font-weight: 600;
-        color: #374151;
+        font-weight: 700;
       }
 
       .meters {
-        font-style: italic;
+        font-weight: 500;
+        font-size: 0.65rem;
+      }
+
+      .tabs button.selected-first .slots,
+      .tabs button.selected-first .meters,
+      .tabs button.selected-second .slots,
+      .tabs button.selected-second .meters {
+        color: white;
       }
       .detail-overview-container {
         display: flex;
@@ -279,9 +347,10 @@ import {
       .comparison-controls {
         margin: 1rem 0;
         padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border: 1px solid #e9ecef;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
       }
 
       .comparison-mode {
@@ -301,6 +370,7 @@ import {
         font-weight: 600;
         color: #0b63d1;
         cursor: pointer;
+        font-size: 0.9rem;
       }
 
       .comparison-info {
@@ -313,16 +383,17 @@ import {
       .comparison-info p {
         margin: 0;
         color: #6b7280;
-        font-size: 0.9rem;
+        font-size: 0.875rem;
       }
 
       .selected-count {
-        background: #0b63d1;
+        background: linear-gradient(135deg, #0b63d1 0%, #1d4ed8 100%);
         color: white;
         padding: 0.25rem 0.75rem;
         border-radius: 12px;
         font-size: 0.8rem;
         font-weight: 600;
+        box-shadow: 0 2px 4px rgba(11, 99, 209, 0.3);
       }
     `,
   ],
