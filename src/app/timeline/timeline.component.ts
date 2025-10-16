@@ -241,7 +241,7 @@ interface StorageStats {
       }
 
       .utilization-badge.high {
-        background-color: #dc2626;
+        background-color: #10b981;
       }
 
       .utilization-badge.medium {
@@ -249,7 +249,7 @@ interface StorageStats {
       }
 
       .utilization-badge.low {
-        background-color: #10b981;
+        background-color: #dc2626;
       }
 
       .warehouse-details {
@@ -426,10 +426,10 @@ export class TimelineComponent implements OnInit {
           data: this.storageStats.map((stat) => stat.utilizationRate),
           backgroundColor: this.storageStats.map((stat) =>
             stat.utilizationRate > 70
-              ? '#dc2626'
+              ? '#10b981'
               : stat.utilizationRate > 40
               ? '#f59e0b'
-              : '#10b981'
+              : '#dc2626'
           ),
           borderWidth: 0,
         },
