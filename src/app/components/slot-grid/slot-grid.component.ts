@@ -40,10 +40,10 @@ export interface Slot {
         grid-template-columns: repeat(2, 1fr);
         padding: 1rem;
         gap: 1rem;
-        width: 100%;
+        /* width: 100%; */
       }
       .slot {
-        width: 10rem;
+        width: 20rem;
         /* width: 3rem; */
 
         border: 1px solid #ccc;

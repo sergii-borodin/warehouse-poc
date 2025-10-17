@@ -83,8 +83,8 @@ import {
         }
       </div>
       <div class="hint">
-        Click a storage to view details @if (filterState.minAvailableMeters &&
-        filterState.minAvailableMeters > 0) {
+        Click a storage to view slot availability for {{ getDateRangeLabel() }} @if
+        (filterState.minAvailableMeters && filterState.minAvailableMeters > 0) {
         <span class="hint-highlight">
           — Available slots matching your {{ filterState.minAvailableMeters }}m² requirement will be
           highlighted</span
@@ -94,19 +94,21 @@ import {
       <div class="detail-overview-container">
         @if (firstActiveId) {
         <div class="overview">
-          <h3>{{ getStorageById(firstActiveId)!.name }} — Slots (today)</h3>
+          <h3>{{ getStorageById(firstActiveId)!.name }} — Slots ({{ getDateRangeLabel() }})</h3>
           <app-slot-grid
             [slots]="getStorageById(firstActiveId)!.slots"
-            [showTodayAvailability]="true"
+            [showTodayAvailability]="isShowingToday()"
+            [customDateRange]="getDateRange()"
             [autoSelectCount]="getRequiredSlotCount(getStorageById(firstActiveId)!)"
           ></app-slot-grid>
         </div>
         } @if (secondActiveId){
         <div class="overview">
-          <h3>{{ getStorageById(secondActiveId)!.name }} — Slots (today)</h3>
+          <h3>{{ getStorageById(secondActiveId)!.name }} — Slots ({{ getDateRangeLabel() }})</h3>
           <app-slot-grid
             [slots]="getStorageById(secondActiveId)!.slots"
-            [showTodayAvailability]="true"
+            [showTodayAvailability]="isShowingToday()"
+            [customDateRange]="getDateRange()"
             [autoSelectCount]="getRequiredSlotCount(getStorageById(secondActiveId)!)"
           ></app-slot-grid>
         </div>
@@ -670,5 +672,41 @@ export class StorageListComponent implements OnInit {
     // Make sure we don't request more slots than are available
     const availableSlots = this.getAvailableSlotCount(storage);
     return Math.min(requiredSlots, availableSlots);
+  }
+
+  /**
+   * Check if we're showing today's availability
+   */
+  isShowingToday(): boolean {
+    const today = new Date().toISOString().split('T')[0];
+    return this.filterState.startDate === today && this.filterState.endDate === today;
+  }
+
+  /**
+   * Get the date range for the slot grid component
+   */
+  getDateRange(): { start: Date; end: Date } | undefined {
+    if (!this.filterState.startDate || !this.filterState.endDate) {
+      return undefined;
+    }
+    return {
+      start: new Date(this.filterState.startDate),
+      end: new Date(this.filterState.endDate),
+    };
+  }
+
+  /**
+   * Get a label describing the current date range
+   */
+  getDateRangeLabel(): string {
+    if (this.isShowingToday()) {
+      return 'today';
+    }
+    if (this.filterState.startDate === this.filterState.endDate) {
+      return this.formatDate(this.filterState.startDate);
+    }
+    return `${this.formatDate(this.filterState.startDate)} - ${this.formatDate(
+      this.filterState.endDate
+    )}`;
   }
 }
