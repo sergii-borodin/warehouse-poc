@@ -30,15 +30,15 @@ interface StorageStats {
               type="date"
               id="startDate"
               [(ngModel)]="selectedStartDate"
-              (ngModelChange)="onDateChange()"
-              [max]="selectedEndDate || maxDate"
+              (ngModelChange)="onStartDateChange()"
+              [max]="maxDate"
             />
             <span class="date-separator">to</span>
             <input
               type="date"
               id="endDate"
               [(ngModel)]="selectedEndDate"
-              (ngModelChange)="onDateChange()"
+              (ngModelChange)="onEndDateChange()"
               [min]="selectedStartDate"
               [max]="maxDate"
             />
@@ -88,7 +88,7 @@ interface StorageStats {
 
         <div class="chart-container chart-container-wide">
           <h3>Slot Availability Timeline</h3>
-          <p class="chart-subtitle">6-month forecast from {{ formatDate(selectedEndDate) }}</p>
+          <p class="chart-subtitle">{{ timelineChartSubtitle }}</p>
           <canvas
             baseChart
             [data]="timelineChartData"
@@ -165,8 +165,8 @@ interface StorageStats {
 
       .page {
         padding: 1rem;
-        max-width: 1400px;
-        margin: 0 auto;
+        max-width: 100%;
+        overflow-x: hidden;
       }
 
       .page-header {
@@ -174,7 +174,7 @@ interface StorageStats {
         justify-content: space-between;
         align-items: center;
         margin-bottom: 2rem;
-        padding: 1.5rem;
+        padding: 1rem;
         background: white;
         border-radius: 12px;
         border: 1px solid #e2e8f0;
@@ -186,7 +186,7 @@ interface StorageStats {
       .page-header h2 {
         margin: 0;
         color: #1f2937;
-        font-size: 1.75rem;
+        font-size: 1.5rem;
         font-weight: 700;
       }
 
@@ -278,14 +278,15 @@ interface StorageStats {
         border: 1px solid #e2e8f0;
       }
 
-      @media (max-width: 968px) {
+      @media (max-width: 768px) {
         .page-header {
           flex-direction: column;
           align-items: flex-start;
+          padding: 0.875rem;
         }
 
         .page-header h2 {
-          font-size: 1.5rem;
+          font-size: 1.25rem;
         }
 
         .date-selector {
@@ -300,6 +301,10 @@ interface StorageStats {
         .date-separator {
           text-align: center;
         }
+
+        .stat-card {
+          padding: 1rem;
+        }
       }
 
       .stats-grid {
@@ -313,9 +318,9 @@ interface StorageStats {
         background: white;
         border: 1px solid #e2e8f0;
         border-radius: 12px;
-        padding: 1.5rem;
+        padding: 1.25rem;
         text-align: center;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
@@ -367,11 +372,12 @@ interface StorageStats {
         background: white;
         border: 1px solid #e2e8f0;
         border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        padding: 1.25rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
         min-height: 400px;
         display: flex;
         flex-direction: column;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
       .chart-container h3 {
@@ -408,8 +414,9 @@ interface StorageStats {
         background: white;
         border: 1px solid #e2e8f0;
         border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        padding: 1.25rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
       .warehouse-list h3 {
@@ -430,9 +437,9 @@ interface StorageStats {
       .warehouse-card {
         border: 1px solid #e2e8f0;
         border-radius: 8px;
-        padding: 1.25rem;
+        padding: 1rem;
         background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        transition: all 0.2s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
       .warehouse-card:hover {
@@ -512,6 +519,7 @@ export class TimelineComponent implements OnInit {
   selectedStartDate: string = '';
   selectedEndDate: string = '';
   maxDate: string = '';
+  timelineChartSubtitle: string = '';
 
   // Overall statistics
   totalSlots = 0;
@@ -640,6 +648,36 @@ export class TimelineComponent implements OnInit {
     this.maxDate = this.formatDateForInput(maxDate);
 
     this.storages = this.storageService.getAll();
+    this.calculateStatistics();
+    this.setupCharts();
+  }
+
+  onStartDateChange() {
+    // If start date is after end date, adjust end date to match start date
+    if (this.selectedStartDate && this.selectedEndDate) {
+      const startDate = new Date(this.selectedStartDate);
+      const endDate = new Date(this.selectedEndDate);
+
+      if (startDate > endDate) {
+        this.selectedEndDate = this.selectedStartDate;
+      }
+    }
+
+    this.calculateStatistics();
+    this.setupCharts();
+  }
+
+  onEndDateChange() {
+    // If end date is before start date, adjust start date to match end date
+    if (this.selectedStartDate && this.selectedEndDate) {
+      const startDate = new Date(this.selectedStartDate);
+      const endDate = new Date(this.selectedEndDate);
+
+      if (endDate < startDate) {
+        this.selectedStartDate = this.selectedEndDate;
+      }
+    }
+
     this.calculateStatistics();
     this.setupCharts();
   }
@@ -842,31 +880,95 @@ export class TimelineComponent implements OnInit {
       ],
     };
 
-    // Timeline chart - show availability for the next 6 months from selected end date
+    // Timeline chart - determine if we should show 6-month forecast or custom range
     const timelineLabels = [];
     const timelineData = [];
-    const startDate = new Date(this.selectedEndDate + 'T00:00:00');
 
-    // Show data points weekly for 6 months (approximately 26 weeks)
-    const numberOfWeeks = 26;
-    for (let i = 0; i < numberOfWeeks; i++) {
-      const date = new Date(startDate);
-      date.setDate(startDate.getDate() + i * 7); // Weekly intervals
+    // Check if user selected a custom date range (not today)
+    const today = this.formatDateForInput(new Date());
+    const isDefaultToday = this.selectedStartDate === today && this.selectedEndDate === today;
 
-      // Format label to show month and week
-      const monthYear = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-      const weekOfMonth = Math.ceil(date.getDate() / 7);
-      timelineLabels.push(`${monthYear} W${weekOfMonth}`);
+    if (isDefaultToday) {
+      // Default behavior: Show 6-month forecast from today
+      this.timelineChartSubtitle = `6-month forecast from ${this.formatDate(this.selectedEndDate)}`;
+      const startDate = new Date(this.selectedEndDate + 'T00:00:00');
 
-      // Calculate actual availability for this date
-      let totalAvailableForDate = 0;
-      this.storages.forEach((storage) => {
-        const availableSlotsForDate =
-          storage.slots?.filter((slot: any) => this.isSlotAvailableOnDate(slot, date)).length || 0;
-        totalAvailableForDate += availableSlotsForDate;
-      });
+      // Show data points weekly for 6 months (approximately 26 weeks)
+      const numberOfWeeks = 26;
+      for (let i = 0; i < numberOfWeeks; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i * 7); // Weekly intervals
 
-      timelineData.push(totalAvailableForDate);
+        // Format label to show month and week
+        const monthYear = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+        const weekOfMonth = Math.ceil(date.getDate() / 7);
+        timelineLabels.push(`${monthYear} W${weekOfMonth}`);
+
+        // Calculate actual availability for this date
+        let totalAvailableForDate = 0;
+        this.storages.forEach((storage) => {
+          const availableSlotsForDate =
+            storage.slots?.filter((slot: any) => this.isSlotAvailableOnDate(slot, date)).length ||
+            0;
+          totalAvailableForDate += availableSlotsForDate;
+        });
+
+        timelineData.push(totalAvailableForDate);
+      }
+    } else {
+      // Custom range: Show data for the selected date range
+      this.timelineChartSubtitle = `Availability from ${this.formatDate(
+        this.selectedStartDate
+      )} to ${this.formatDate(this.selectedEndDate)}`;
+
+      const startDate = new Date(this.selectedStartDate + 'T00:00:00');
+      const endDate = new Date(this.selectedEndDate + 'T00:00:00');
+
+      // Calculate the number of days in the range
+      const daysDiff =
+        Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+      // Determine interval based on range length
+      let intervalDays = 1; // Daily by default
+      let maxDataPoints = 30; // Maximum number of data points to show
+
+      if (daysDiff > maxDataPoints) {
+        // Use weekly intervals for longer ranges
+        intervalDays = Math.ceil(daysDiff / maxDataPoints);
+      }
+
+      // Generate data points
+      for (let i = 0; i < daysDiff; i += intervalDays) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+
+        // Don't go beyond end date
+        if (date > endDate) break;
+
+        // Format label based on interval
+        let label;
+        if (intervalDays === 1) {
+          // Daily view: show short date
+          label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        } else {
+          // Weekly or longer view: show month and week
+          const monthYear = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+          const weekOfMonth = Math.ceil(date.getDate() / 7);
+          label = `${monthYear} W${weekOfMonth}`;
+        }
+        timelineLabels.push(label);
+
+        // Calculate actual availability for this date
+        let totalAvailableForDate = 0;
+        this.storages.forEach((storage) => {
+          const availableSlotsForDate =
+            storage.slots?.filter((slot: any) => this.isSlotAvailableOnDate(slot, date)).length ||
+            0;
+          totalAvailableForDate += availableSlotsForDate;
+        });
+
+        timelineData.push(totalAvailableForDate);
+      }
     }
 
     this.timelineChartData = {
