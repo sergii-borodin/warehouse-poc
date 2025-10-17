@@ -24,16 +24,29 @@ interface StorageStats {
       <div class="page-header">
         <h2>Storage Analytics & Timeline</h2>
         <div class="date-selector">
-          <label for="selectedDate">View statistics for:</label>
-          <input
-            type="date"
-            id="selectedDate"
-            [(ngModel)]="selectedDate"
-            (ngModelChange)="onDateChange()"
-            [max]="maxDate"
-          />
+          <label for="startDate">View statistics for date range:</label>
+          <div class="date-inputs">
+            <input
+              type="date"
+              id="startDate"
+              [(ngModel)]="selectedStartDate"
+              (ngModelChange)="onDateChange()"
+              [max]="selectedEndDate || maxDate"
+            />
+            <span class="date-separator">to</span>
+            <input
+              type="date"
+              id="endDate"
+              [(ngModel)]="selectedEndDate"
+              (ngModelChange)="onDateChange()"
+              [min]="selectedStartDate"
+              [max]="maxDate"
+            />
+          </div>
           <button class="today-btn" (click)="setToday()">Today</button>
-          <span class="date-display">{{ formatSelectedDate() }}</span>
+          <button class="preset-btn" (click)="setNextWeek()">Next Week</button>
+          <button class="preset-btn" (click)="setNextMonth()">Next Month</button>
+          <span class="date-display">{{ formatSelectedDateRange() }}</span>
         </div>
       </div>
 
@@ -41,7 +54,9 @@ interface StorageStats {
         <div class="stat-card">
           <h3>Overall Utilization</h3>
           <div class="stat-value">{{ overallUtilization }}%</div>
-          <div class="stat-detail">{{ totalAvailableSlots }}/{{ totalSlots }} slots available</div>
+          <div class="stat-detail">
+            {{ totalAvailableSlots }}/{{ totalSlots }} slots available for selected period
+          </div>
         </div>
 
         <div class="stat-card">
@@ -61,7 +76,7 @@ interface StorageStats {
 
       <div class="charts-row-primary">
         <div class="chart-container">
-          <h3>Warehouse Utilization</h3>
+          <h3>Warehouse Utilization (selected period)</h3>
           <canvas
             baseChart
             [data]="utilizationChartData"
@@ -71,8 +86,9 @@ interface StorageStats {
           </canvas>
         </div>
 
-        <div class="chart-container">
-          <h3>Slot Availability Timeline (6-month forecast)</h3>
+        <div class="chart-container chart-container-wide">
+          <h3>Slot Availability Timeline</h3>
+          <p class="chart-subtitle">6-month forecast from {{ formatDate(selectedEndDate) }}</p>
           <canvas
             baseChart
             [data]="timelineChartData"
@@ -108,7 +124,7 @@ interface StorageStats {
       </div>
 
       <div class="warehouse-list">
-        <h3>Warehouse Details</h3>
+        <h3>Warehouse Details (for selected period)</h3>
         <div class="warehouse-cards">
           <div class="warehouse-card" *ngFor="let storage of storageStats">
             <div class="warehouse-header">
@@ -187,6 +203,22 @@ interface StorageStats {
         font-size: 0.95rem;
       }
 
+      .date-inputs {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        padding: 0.5rem;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+      }
+
+      .date-separator {
+        color: #6b7280;
+        font-weight: 500;
+        font-size: 0.875rem;
+      }
+
       .date-selector input[type='date'] {
         padding: 0.625rem;
         border: 1px solid #e2e8f0;
@@ -194,6 +226,7 @@ interface StorageStats {
         font-size: 0.9rem;
         color: #374151;
         transition: all 0.2s ease;
+        background: white;
       }
 
       .date-selector input[type='date']:focus {
@@ -202,7 +235,8 @@ interface StorageStats {
         box-shadow: 0 0 0 3px rgba(11, 99, 209, 0.1);
       }
 
-      .today-btn {
+      .today-btn,
+      .preset-btn {
         padding: 0.625rem 1rem;
         background: linear-gradient(135deg, #0b63d1 0%, #1d4ed8 100%);
         color: white;
@@ -213,11 +247,25 @@ interface StorageStats {
         cursor: pointer;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 0 2px 4px rgba(11, 99, 209, 0.3);
+        white-space: nowrap;
       }
 
-      .today-btn:hover {
+      .preset-btn {
+        background: white;
+        color: #0b63d1;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      }
+
+      .today-btn:hover,
+      .preset-btn:hover {
         box-shadow: 0 10px 25px -5px rgba(11, 99, 209, 0.4), 0 8px 10px -6px rgba(11, 99, 209, 0.2);
         transform: translateY(-2px);
+      }
+
+      .preset-btn:hover {
+        border-color: #0b63d1;
+        background: #f8fafc;
       }
 
       .date-display {
@@ -230,7 +278,7 @@ interface StorageStats {
         border: 1px solid #e2e8f0;
       }
 
-      @media (max-width: 768px) {
+      @media (max-width: 968px) {
         .page-header {
           flex-direction: column;
           align-items: flex-start;
@@ -238,6 +286,19 @@ interface StorageStats {
 
         .page-header h2 {
           font-size: 1.5rem;
+        }
+
+        .date-selector {
+          width: 100%;
+        }
+
+        .date-inputs {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .date-separator {
+          text-align: center;
         }
       }
 
@@ -318,9 +379,25 @@ interface StorageStats {
         color: #1f2937;
         font-size: 1.1rem;
         font-weight: 700;
+        flex-shrink: 0;
         padding-bottom: 0.75rem;
         border-bottom: 2px solid #e2e8f0;
-        flex-shrink: 0;
+      }
+
+      .chart-container-wide h3 {
+        margin-bottom: 0.5rem;
+        padding-bottom: 0;
+        border-bottom: none;
+      }
+
+      .chart-subtitle {
+        margin: 0 0 1rem 0;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e2e8f0;
+        color: #6b7280;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        font-style: italic;
       }
 
       .chart-container canvas {
@@ -431,8 +508,9 @@ export class TimelineComponent implements OnInit {
   storages: any[] = [];
   storageStats: StorageStats[] = [];
 
-  // Date selection
-  selectedDate: string = '';
+  // Date range selection
+  selectedStartDate: string = '';
+  selectedEndDate: string = '';
   maxDate: string = '';
 
   // Overall statistics
@@ -551,9 +629,10 @@ export class TimelineComponent implements OnInit {
   constructor(private storageService: StorageService) {}
 
   ngOnInit() {
-    // Set default date to today
+    // Set default date range to today
     const today = new Date();
-    this.selectedDate = this.formatDateForInput(today);
+    this.selectedStartDate = this.formatDateForInput(today);
+    this.selectedEndDate = this.formatDateForInput(today);
 
     // Set max date to 1 year from now
     const maxDate = new Date();
@@ -571,7 +650,29 @@ export class TimelineComponent implements OnInit {
   }
 
   setToday() {
-    this.selectedDate = this.formatDateForInput(new Date());
+    const today = new Date();
+    this.selectedStartDate = this.formatDateForInput(today);
+    this.selectedEndDate = this.formatDateForInput(today);
+    this.onDateChange();
+  }
+
+  setNextWeek() {
+    const today = new Date();
+    const nextWeek = new Date(today);
+    nextWeek.setDate(today.getDate() + 7);
+
+    this.selectedStartDate = this.formatDateForInput(today);
+    this.selectedEndDate = this.formatDateForInput(nextWeek);
+    this.onDateChange();
+  }
+
+  setNextMonth() {
+    const today = new Date();
+    const nextMonth = new Date(today);
+    nextMonth.setMonth(today.getMonth() + 1);
+
+    this.selectedStartDate = this.formatDateForInput(today);
+    this.selectedEndDate = this.formatDateForInput(nextMonth);
     this.onDateChange();
   }
 
@@ -582,14 +683,39 @@ export class TimelineComponent implements OnInit {
     return `${year}-${month}-${day}`;
   }
 
-  formatSelectedDate(): string {
-    if (!this.selectedDate) return '';
-    const date = new Date(this.selectedDate + 'T00:00:00');
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
+  formatSelectedDateRange(): string {
+    if (!this.selectedStartDate || !this.selectedEndDate) return '';
+
+    const startDate = new Date(this.selectedStartDate + 'T00:00:00');
+    const endDate = new Date(this.selectedEndDate + 'T00:00:00');
+
+    if (this.selectedStartDate === this.selectedEndDate) {
+      return startDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    }
+
+    return `${startDate.toLocaleDateString('en-US', {
+      month: 'short',
       day: 'numeric',
+      year: 'numeric',
+    })} - ${endDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })}`;
+  }
+
+  formatDate(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString + 'T00:00:00');
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
     });
   }
 
@@ -616,14 +742,34 @@ export class TimelineComponent implements OnInit {
     });
   }
 
+  private isSlotAvailableForDateRange(slot: any, startDate: Date, endDate: Date): boolean {
+    if (!slot.bookings || slot.bookings.length === 0) return true;
+
+    return !slot.bookings.some((booking: any) => {
+      const bookingStart = new Date(booking.startDate);
+      const bookingEnd = new Date(booking.endDate);
+      return this.rangesOverlap(startDate, endDate, bookingStart, bookingEnd);
+    });
+  }
+
+  private rangesOverlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date): boolean {
+    const aS = new Date(aStart.getFullYear(), aStart.getMonth(), aStart.getDate()).getTime();
+    const aE = new Date(aEnd.getFullYear(), aEnd.getMonth(), aEnd.getDate()).getTime();
+    const bS = new Date(bStart.getFullYear(), bStart.getMonth(), bStart.getDate()).getTime();
+    const bE = new Date(bEnd.getFullYear(), bEnd.getMonth(), bEnd.getDate()).getTime();
+    return aS <= bE && bS <= aE;
+  }
+
   private calculateStatistics() {
-    const selectedDateObj = new Date(this.selectedDate + 'T00:00:00');
+    const startDateObj = new Date(this.selectedStartDate + 'T00:00:00');
+    const endDateObj = new Date(this.selectedEndDate + 'T00:00:00');
 
     this.storageStats = this.storages.map((storage) => {
       const totalSlots = storage.slots?.length || 0;
       const availableSlots =
-        storage.slots?.filter((slot: any) => this.isSlotAvailableOnDate(slot, selectedDateObj))
-          .length || 0;
+        storage.slots?.filter((slot: any) =>
+          this.isSlotAvailableForDateRange(slot, startDateObj, endDateObj)
+        ).length || 0;
 
       const utilizationRate = totalSlots > 0 ? Math.round((availableSlots / totalSlots) * 100) : 0;
 
@@ -696,10 +842,10 @@ export class TimelineComponent implements OnInit {
       ],
     };
 
-    // Timeline chart - show availability for the next 6 months from selected date
+    // Timeline chart - show availability for the next 6 months from selected end date
     const timelineLabels = [];
     const timelineData = [];
-    const startDate = new Date(this.selectedDate + 'T00:00:00');
+    const startDate = new Date(this.selectedEndDate + 'T00:00:00');
 
     // Show data points weekly for 6 months (approximately 26 weeks)
     const numberOfWeeks = 26;
