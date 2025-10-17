@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { StorageService } from '../services/storage.service';
@@ -17,10 +18,24 @@ interface StorageStats {
 @Component({
   selector: 'app-timeline',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective],
+  imports: [CommonModule, FormsModule, BaseChartDirective],
   template: `
     <div class="page">
-      <h2>Storage Analytics & Timeline</h2>
+      <div class="page-header">
+        <h2>Storage Analytics & Timeline</h2>
+        <div class="date-selector">
+          <label for="selectedDate">View statistics for:</label>
+          <input
+            type="date"
+            id="selectedDate"
+            [(ngModel)]="selectedDate"
+            (ngModelChange)="onDateChange()"
+            [max]="maxDate"
+          />
+          <button class="today-btn" (click)="setToday()">Today</button>
+          <span class="date-display">{{ formatSelectedDate() }}</span>
+        </div>
+      </div>
 
       <div class="stats-grid">
         <div class="stat-card">
@@ -44,7 +59,7 @@ interface StorageStats {
         </div>
       </div>
 
-      <div class="charts-grid">
+      <div class="charts-row-primary">
         <div class="chart-container">
           <h3>Warehouse Utilization</h3>
           <canvas
@@ -57,23 +72,25 @@ interface StorageStats {
         </div>
 
         <div class="chart-container">
+          <h3>Slot Availability Timeline (6-month forecast)</h3>
+          <canvas
+            baseChart
+            [data]="timelineChartData"
+            [options]="timelineChartOptions"
+            [type]="'line'"
+          >
+          </canvas>
+        </div>
+      </div>
+
+      <div class="charts-row-secondary">
+        <div class="chart-container">
           <h3>Frost-free vs Non-Frost-free Distribution</h3>
           <canvas
             baseChart
             [data]="frostFreeChartData"
             [options]="frostFreeChartOptions"
             [type]="'doughnut'"
-          >
-          </canvas>
-        </div>
-
-        <div class="chart-container">
-          <h3>Slot Availability Timeline</h3>
-          <canvas
-            baseChart
-            [data]="timelineChartData"
-            [options]="timelineChartOptions"
-            [type]="'line'"
           >
           </canvas>
         </div>
@@ -126,10 +143,102 @@ interface StorageStats {
   `,
   styles: [
     `
+      * {
+        box-sizing: border-box;
+      }
+
       .page {
         padding: 1rem;
         max-width: 1400px;
         margin: 0 auto;
+      }
+
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .page-header h2 {
+        margin: 0;
+        color: #1f2937;
+        font-size: 1.75rem;
+        font-weight: 700;
+      }
+
+      .date-selector {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      .date-selector label {
+        color: #374151;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      .date-selector input[type='date'] {
+        padding: 0.625rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: #374151;
+        transition: all 0.2s ease;
+      }
+
+      .date-selector input[type='date']:focus {
+        outline: none;
+        border-color: #0b63d1;
+        box-shadow: 0 0 0 3px rgba(11, 99, 209, 0.1);
+      }
+
+      .today-btn {
+        padding: 0.625rem 1rem;
+        background: linear-gradient(135deg, #0b63d1 0%, #1d4ed8 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 4px rgba(11, 99, 209, 0.3);
+      }
+
+      .today-btn:hover {
+        box-shadow: 0 10px 25px -5px rgba(11, 99, 209, 0.4), 0 8px 10px -6px rgba(11, 99, 209, 0.2);
+        transform: translateY(-2px);
+      }
+
+      .date-display {
+        color: #0b63d1;
+        font-weight: 600;
+        font-size: 0.95rem;
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+      }
+
+      @media (max-width: 768px) {
+        .page-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .page-header h2 {
+          font-size: 1.5rem;
+        }
       }
 
       .stats-grid {
@@ -142,68 +251,97 @@ interface StorageStats {
       .stat-card {
         background: white;
         border: 1px solid #e2e8f0;
-        border-radius: 8px;
+        border-radius: 12px;
         padding: 1.5rem;
         text-align: center;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .stat-card:hover {
+        border-color: #0b63d1;
+        box-shadow: 0 10px 25px -5px rgba(11, 99, 209, 0.2), 0 8px 10px -6px rgba(11, 99, 209, 0.1);
+        transform: translateY(-4px);
       }
 
       .stat-card h3 {
-        margin: 0 0 0.5rem 0;
+        margin: 0 0 0.75rem 0;
         color: #374151;
-        font-size: 0.9rem;
+        font-size: 0.875rem;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.05em;
       }
 
       .stat-value {
-        font-size: 2rem;
-        font-weight: bold;
+        font-size: 2.25rem;
+        font-weight: 700;
         color: #0b63d1;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
       }
 
       .stat-detail {
         color: #6b7280;
         font-size: 0.875rem;
+        line-height: 1.5;
       }
 
-      .charts-grid {
+      .charts-row-primary,
+      .charts-row-secondary {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
         margin-bottom: 2rem;
+      }
+
+      @media (max-width: 1024px) {
+        .charts-row-primary,
+        .charts-row-secondary {
+          grid-template-columns: 1fr;
+        }
       }
 
       .chart-container {
         background: white;
         border: 1px solid #e2e8f0;
-        border-radius: 8px;
+        border-radius: 12px;
         padding: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
       }
 
       .chart-container h3 {
         margin: 0 0 1rem 0;
-        color: #374151;
+        color: #1f2937;
         font-size: 1.1rem;
-        font-weight: 600;
+        font-weight: 700;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e2e8f0;
+        flex-shrink: 0;
+      }
+
+      .chart-container canvas {
+        flex: 1;
       }
 
       .warehouse-list {
         background: white;
         border: 1px solid #e2e8f0;
-        border-radius: 8px;
+        border-radius: 12px;
         padding: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
       }
 
       .warehouse-list h3 {
-        margin: 0 0 1rem 0;
-        color: #374151;
-        font-size: 1.2rem;
-        font-weight: 600;
+        margin: 0 0 1.5rem 0;
+        color: #1f2937;
+        font-size: 1.25rem;
+        font-weight: 700;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e2e8f0;
       }
 
       .warehouse-cards {
@@ -214,63 +352,77 @@ interface StorageStats {
 
       .warehouse-card {
         border: 1px solid #e2e8f0;
-        border-radius: 6px;
-        padding: 1rem;
-        background: #f8fafc;
+        border-radius: 8px;
+        padding: 1.25rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        transition: all 0.2s ease;
+      }
+
+      .warehouse-card:hover {
+        border-color: #0b63d1;
+        box-shadow: 0 4px 6px rgba(11, 99, 209, 0.1);
+        transform: translateY(-2px);
       }
 
       .warehouse-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 0.75rem;
+        margin-bottom: 1rem;
       }
 
       .warehouse-header h4 {
         margin: 0;
-        color: #374151;
+        color: #1f2937;
         font-size: 1rem;
+        font-weight: 700;
       }
 
       .utilization-badge {
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: 600;
+        padding: 0.375rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8125rem;
+        font-weight: 700;
         color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
 
       .utilization-badge.high {
-        background-color: #10b981;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       }
 
       .utilization-badge.medium {
-        background-color: #f59e0b;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       }
 
       .utilization-badge.low {
-        background-color: #dc2626;
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
       }
 
       .warehouse-details {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.625rem;
       }
 
       .detail-item {
         display: flex;
         justify-content: space-between;
         font-size: 0.875rem;
+        padding: 0.5rem;
+        background: white;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
       }
 
       .detail-item .label {
         color: #6b7280;
+        font-weight: 500;
       }
 
       .detail-item .value {
-        color: #374151;
-        font-weight: 500;
+        color: #1f2937;
+        font-weight: 700;
       }
     `,
   ],
@@ -278,6 +430,10 @@ interface StorageStats {
 export class TimelineComponent implements OnInit {
   storages: any[] = [];
   storageStats: StorageStats[] = [];
+
+  // Date selection
+  selectedDate: string = '';
+  maxDate: string = '';
 
   // Overall statistics
   totalSlots = 0;
@@ -345,15 +501,36 @@ export class TimelineComponent implements OnInit {
 
   timelineChartOptions: ChartOptions<'line'> = {
     responsive: true,
+    maintainAspectRatio: true,
     plugins: {
       legend: {
         position: 'top',
       },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+      },
     },
     scales: {
+      x: {
+        ticks: {
+          maxRotation: 45,
+          minRotation: 45,
+          autoSkip: true,
+          maxTicksLimit: 15,
+        },
+      },
       y: {
         beginAtZero: true,
+        ticks: {
+          precision: 0,
+        },
       },
+    },
+    interaction: {
+      mode: 'nearest',
+      axis: 'x',
+      intersect: false,
     },
   };
 
@@ -374,17 +551,79 @@ export class TimelineComponent implements OnInit {
   constructor(private storageService: StorageService) {}
 
   ngOnInit() {
+    // Set default date to today
+    const today = new Date();
+    this.selectedDate = this.formatDateForInput(today);
+
+    // Set max date to 1 year from now
+    const maxDate = new Date();
+    maxDate.setFullYear(maxDate.getFullYear() + 1);
+    this.maxDate = this.formatDateForInput(maxDate);
+
     this.storages = this.storageService.getAll();
     this.calculateStatistics();
     this.setupCharts();
   }
 
+  onDateChange() {
+    this.calculateStatistics();
+    this.setupCharts();
+  }
+
+  setToday() {
+    this.selectedDate = this.formatDateForInput(new Date());
+    this.onDateChange();
+  }
+
+  formatDateForInput(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  formatSelectedDate(): string {
+    if (!this.selectedDate) return '';
+    const date = new Date(this.selectedDate + 'T00:00:00');
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }
+
+  private isSlotAvailableOnDate(slot: any, date: Date): boolean {
+    if (!slot.bookings || slot.bookings.length === 0) return true;
+
+    const checkDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+
+    return !slot.bookings.some((booking: any) => {
+      const bookingStart = new Date(booking.startDate);
+      const bookingEnd = new Date(booking.endDate);
+      const startTime = new Date(
+        bookingStart.getFullYear(),
+        bookingStart.getMonth(),
+        bookingStart.getDate()
+      ).getTime();
+      const endTime = new Date(
+        bookingEnd.getFullYear(),
+        bookingEnd.getMonth(),
+        bookingEnd.getDate()
+      ).getTime();
+
+      return checkDate >= startTime && checkDate <= endTime;
+    });
+  }
+
   private calculateStatistics() {
+    const selectedDateObj = new Date(this.selectedDate + 'T00:00:00');
+
     this.storageStats = this.storages.map((storage) => {
       const totalSlots = storage.slots?.length || 0;
       const availableSlots =
-        storage.slots?.filter((slot: any) => !slot.bookings || slot.bookings.length === 0).length ||
-        0;
+        storage.slots?.filter((slot: any) => this.isSlotAvailableOnDate(slot, selectedDateObj))
+          .length || 0;
 
       const utilizationRate = totalSlots > 0 ? Math.round((availableSlots / totalSlots) * 100) : 0;
 
@@ -457,19 +696,31 @@ export class TimelineComponent implements OnInit {
       ],
     };
 
-    // Timeline chart (simulated data for the next 7 days)
+    // Timeline chart - show availability for the next 6 months from selected date
     const timelineLabels = [];
     const timelineData = [];
-    const today = new Date();
+    const startDate = new Date(this.selectedDate + 'T00:00:00');
 
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      timelineLabels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    // Show data points weekly for 6 months (approximately 26 weeks)
+    const numberOfWeeks = 26;
+    for (let i = 0; i < numberOfWeeks; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i * 7); // Weekly intervals
 
-      // Simulate availability data (in real app, this would come from actual booking data)
-      const simulatedAvailability = Math.max(0, this.totalAvailableSlots - i * 2);
-      timelineData.push(simulatedAvailability);
+      // Format label to show month and week
+      const monthYear = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      const weekOfMonth = Math.ceil(date.getDate() / 7);
+      timelineLabels.push(`${monthYear} W${weekOfMonth}`);
+
+      // Calculate actual availability for this date
+      let totalAvailableForDate = 0;
+      this.storages.forEach((storage) => {
+        const availableSlotsForDate =
+          storage.slots?.filter((slot: any) => this.isSlotAvailableOnDate(slot, date)).length || 0;
+        totalAvailableForDate += availableSlotsForDate;
+      });
+
+      timelineData.push(totalAvailableForDate);
     }
 
     this.timelineChartData = {

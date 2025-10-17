@@ -164,7 +164,7 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
           </div>
           } @if (selectedSlots().length === 0 && !rentFormOpen() && !confirmation()) {
           <div class="empty-state">
-            <p>👆 Select slots from the storage layout above to start booking</p>
+            <p>Select slots from the storage layout to start booking</p>
           </div>
           }
         </section>
