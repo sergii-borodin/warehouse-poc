@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Pipe, PipeTransform } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -18,6 +18,27 @@ import {
   FilterState,
 } from '../components/storage-filter/storage-filter.component';
 
+@Pipe({
+  name: 'capacityChartData',
+  pure: true,
+  standalone: true,
+})
+export class CapacityChartDataPipe implements PipeTransform {
+  transform(availableSlots: number, totalSlots: number): ChartConfiguration<'doughnut'>['data'] {
+    const bookedSlots = totalSlots - availableSlots;
+    return {
+      labels: ['Available', 'Booked'],
+      datasets: [
+        {
+          data: [availableSlots, bookedSlots],
+          backgroundColor: ['#10b981', '#e5e7eb'],
+          borderWidth: 0,
+        },
+      ],
+    };
+  }
+}
+
 @Component({
   selector: 'app-search',
   standalone: true,
@@ -28,6 +49,7 @@ import {
     FontAwesomeModule,
     BaseChartDirective,
     StorageFilterComponent,
+    CapacityChartDataPipe,
   ],
   template: `
     <div class="page">
@@ -97,7 +119,10 @@ import {
                 <div class="capacity-chart">
                   <canvas
                     baseChart
-                    [data]="getCapacityChartData(storage)"
+                    [data]="
+                      getAvailableSlotCount(storage)
+                        | capacityChartData : getTotalSlotCount(storage.id)
+                    "
                     [options]="capacityChartOptions"
                     [type]="'doughnut'"
                     width="30"
