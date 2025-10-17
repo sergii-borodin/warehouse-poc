@@ -12,6 +12,7 @@ import {
   StorageFilterComponent,
   FilterState,
 } from '../components/storage-filter/storage-filter.component';
+import { SlotCalendarComponent } from '../components/slot-calendar/slot-calendar.component';
 
 @Component({
   selector: 'app-storage-list',
@@ -23,6 +24,7 @@ import {
     FontAwesomeModule,
     SlotGridComponent,
     StorageFilterComponent,
+    SlotCalendarComponent,
   ],
   template: `
     <div class="wrap">
@@ -100,6 +102,7 @@ import {
             [showTodayAvailability]="isShowingToday()"
             [customDateRange]="getDateRange()"
             [autoSelectCount]="getRequiredSlotCount(getStorageById(firstActiveId)!)"
+            (viewCalendar)="onViewSlotCalendar($event)"
           ></app-slot-grid>
         </div>
         } @if (secondActiveId){
@@ -110,10 +113,19 @@ import {
             [showTodayAvailability]="isShowingToday()"
             [customDateRange]="getDateRange()"
             [autoSelectCount]="getRequiredSlotCount(getStorageById(secondActiveId)!)"
+            (viewCalendar)="onViewSlotCalendar($event)"
           ></app-slot-grid>
         </div>
         }
       </div>
+
+      @if (selectedSlotForCalendar) {
+      <app-slot-calendar
+        [slot]="selectedSlotForCalendar"
+        [initialDate]="getInitialCalendarDate()"
+        (close)="closeSlotCalendar()"
+      ></app-slot-calendar>
+      }
     </div>
   `,
   styles: [
@@ -409,6 +421,9 @@ export class StorageListComponent implements OnInit {
 
   comparisonMode = false;
   selectedStorages = new Set<number>();
+
+  // Calendar modal state
+  selectedSlotForCalendar?: Slot;
 
   // Filter state object
   filterState: FilterState = {
@@ -708,5 +723,29 @@ export class StorageListComponent implements OnInit {
     return `${this.formatDate(this.filterState.startDate)} - ${this.formatDate(
       this.filterState.endDate
     )}`;
+  }
+
+  /**
+   * Open the calendar modal for a specific slot
+   */
+  onViewSlotCalendar(slot: Slot) {
+    this.selectedSlotForCalendar = slot;
+  }
+
+  /**
+   * Close the calendar modal
+   */
+  closeSlotCalendar() {
+    this.selectedSlotForCalendar = undefined;
+  }
+
+  /**
+   * Get the initial date to show in the calendar
+   */
+  getInitialCalendarDate(): Date {
+    if (this.filterState.startDate) {
+      return new Date(this.filterState.startDate);
+    }
+    return new Date();
   }
 }

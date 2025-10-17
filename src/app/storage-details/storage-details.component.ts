@@ -8,11 +8,12 @@ import { StorageService } from '../services/storage.service';
 import { AuthService } from '../services/auth.service';
 import { User } from '../shared/models';
 import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.component';
+import { SlotCalendarComponent } from '../components/slot-calendar/slot-calendar.component';
 
 @Component({
   selector: 'app-storage-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, FontAwesomeModule, SlotGridComponent],
+  imports: [CommonModule, FormsModule, FontAwesomeModule, SlotGridComponent, SlotCalendarComponent],
   template: `
     <div class="page">
       <button class="back" (click)="back()">← Back to Search</button>
@@ -74,10 +75,19 @@ import { SlotGridComponent, Slot } from '../components/slot-grid/slot-grid.compo
                 [autoSelectCount]="requiredSlotCount"
                 (slotClicked)="selectSlot($event)"
                 (selectedSlotsChange)="onSelectedSlotsChange($event)"
+                (viewCalendar)="onViewSlotCalendar($event)"
               ></app-slot-grid>
             </div>
           </div>
         </section>
+
+        @if (selectedSlotForCalendar) {
+        <app-slot-calendar
+          [slot]="selectedSlotForCalendar"
+          [initialDate]="getInitialCalendarDate()"
+          (close)="closeSlotCalendar()"
+        ></app-slot-calendar>
+        }
 
         <section class="controls">
           <h2 class="section-title">Booking Details</h2>
@@ -660,6 +670,9 @@ export class StorageDetailComponent implements OnInit {
     totalSlots: number;
   } | null>(null);
 
+  // Calendar modal state
+  selectedSlotForCalendar?: Slot;
+
   companyName = '';
   companyEmail = '';
   companyTlf = '';
@@ -959,5 +972,29 @@ export class StorageDetailComponent implements OnInit {
   getGateHeight(): number {
     if (!this.storage) return 0;
     return Math.max(20, this.scaleLength(this.storage.gateHeight));
+  }
+
+  /**
+   * Open the calendar modal for a specific slot
+   */
+  onViewSlotCalendar(slot: Slot) {
+    this.selectedSlotForCalendar = slot;
+  }
+
+  /**
+   * Close the calendar modal
+   */
+  closeSlotCalendar() {
+    this.selectedSlotForCalendar = undefined;
+  }
+
+  /**
+   * Get the initial date to show in the calendar
+   */
+  getInitialCalendarDate(): Date {
+    if (this.startDate) {
+      return new Date(this.startDate);
+    }
+    return new Date();
   }
 }

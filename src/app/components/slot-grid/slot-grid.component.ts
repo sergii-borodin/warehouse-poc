@@ -1,14 +1,9 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Slot } from '../../shared/models';
 
-export interface Slot {
-  id: number;
-  name?: string;
-  bookings?: Array<{
-    startDate: string;
-    endDate: string;
-  }>;
-}
+// Re-export for backward compatibility
+export type { Slot };
 
 @Component({
   selector: 'app-slot-grid',
@@ -25,10 +20,19 @@ export interface Slot {
         [class.selected]="isSlotSelected(slot)"
         (click)="onSlotClick(slot)"
       >
-        <div class="slot-name">{{ getSlotName(slot) }}</div>
-        <div class="slot-status">
-          {{ getSlotStatusText(slot) }}
+        <div class="slot-content">
+          <div class="slot-name">{{ getSlotName(slot) }}</div>
+          <div class="slot-status">
+            {{ getSlotStatusText(slot) }}
+          </div>
         </div>
+        <button
+          class="calendar-btn"
+          (click)="onViewCalendar($event, slot)"
+          title="View booking calendar"
+        >
+          📅
+        </button>
       </div>
       }
     </div>
@@ -45,13 +49,47 @@ export interface Slot {
       .slot {
         width: 20rem;
         /* width: 3rem; */
-
+        position: relative;
         border: 1px solid #ccc;
         border-radius: 4px;
         padding: 0.5rem;
         background: #fff;
         text-align: center;
         transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .slot-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .calendar-btn {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 6px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 1rem;
+        padding: 0;
+        flex-shrink: 0;
+      }
+
+      .calendar-btn:hover {
+        background: #0b63d1;
+        border-color: #0b63d1;
+        transform: scale(1.1);
+        box-shadow: 0 2px 8px rgba(11, 99, 209, 0.3);
       }
 
       .slot.clickable {
@@ -78,6 +116,10 @@ export interface Slot {
         cursor: not-allowed;
       }
 
+      .slot.unavailable .calendar-btn {
+        opacity: 0.6;
+      }
+
       .slot.selected {
         background: #0b63d1;
         border-color: #1d4ed8;
@@ -92,6 +134,11 @@ export interface Slot {
 
       .slot.selected .slot-status {
         opacity: 1;
+      }
+
+      .slot.selected .calendar-btn {
+        background: white;
+        border-color: white;
       }
 
       .slot-name {
@@ -137,6 +184,7 @@ export class SlotGridComponent implements OnInit, OnChanges {
 
   @Output() slotClicked = new EventEmitter<Slot>();
   @Output() selectedSlotsChange = new EventEmitter<Slot[]>(); // Emit when selection changes
+  @Output() viewCalendar = new EventEmitter<Slot>(); // Emit when user wants to view slot calendar
 
   private hasUserInteracted = false; // Track if user has manually selected/deselected
 
@@ -164,6 +212,11 @@ export class SlotGridComponent implements OnInit, OnChanges {
       // Also emit individual slot click for backward compatibility
       this.slotClicked.emit(slot);
     }
+  }
+
+  onViewCalendar(event: Event, slot: Slot) {
+    event.stopPropagation();
+    this.viewCalendar.emit(slot);
   }
 
   isSlotSelected(slot: Slot): boolean {
