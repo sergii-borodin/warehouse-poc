@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
-import { BaseChartDirective } from 'ng2-charts';
+import { BaseChartDirective, provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { StorageService } from '../services/storage.service';
 
 interface StorageStats {
@@ -19,6 +19,7 @@ interface StorageStats {
   selector: 'app-timeline',
   standalone: true,
   imports: [CommonModule, FormsModule, BaseChartDirective],
+  providers: [provideCharts(withDefaultRegisterables())],
   template: `
     <div class="page">
       <div class="page-header">

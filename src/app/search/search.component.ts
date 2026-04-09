@@ -12,7 +12,7 @@ import { faTentArrowDownToLine } from '@fortawesome/free-solid-svg-icons';
 import { faTent } from '@fortawesome/free-solid-svg-icons';
 import { faTemperatureArrowUp } from '@fortawesome/free-solid-svg-icons';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
-import { BaseChartDirective } from 'ng2-charts';
+import { BaseChartDirective, provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import {
   StorageFilterComponent,
   FilterState,
@@ -51,6 +51,7 @@ export class CapacityChartDataPipe implements PipeTransform {
     StorageFilterComponent,
     CapacityChartDataPipe,
   ],
+  providers: [provideCharts(withDefaultRegisterables())],
   template: `
     <div class="page">
       <section class="search-section">
