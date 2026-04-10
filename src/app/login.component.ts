@@ -21,6 +21,7 @@ import { UserRole, LoginCredentials } from './shared/models';
           Password
           <input [(ngModel)]="password" name="password" type="password" />
         </label>
+        <div class="info">Prefilled for demonstration convenience</div>
         <div class="actions">
           <button type="submit">Login</button>
         </div>
@@ -48,15 +49,21 @@ import { UserRole, LoginCredentials } from './shared/models';
       .error {
         color: #b00020;
       }
+      .info {
+        color: #008000;
+      }
     `,
   ],
 })
 export class LoginComponent {
-  username = '';
-  password = '';
+  username = 'claus';
+  password = 'test';
   error = false;
 
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+  ) {}
 
   submit() {
     this.error = false;
