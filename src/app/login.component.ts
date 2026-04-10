@@ -21,7 +21,10 @@ import { UserRole, LoginCredentials } from './shared/models';
           Password
           <input [(ngModel)]="password" name="password" type="password" />
         </label>
-        <div class="info">Prefilled for demonstration convenience</div>
+        <div class="info">
+          Prefilled for demonstration convenience. <br />
+          Just click Login button.
+        </div>
         <div class="actions">
           <button type="submit">Login</button>
         </div>
